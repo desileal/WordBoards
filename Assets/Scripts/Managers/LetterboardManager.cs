@@ -51,12 +51,12 @@ public class LetterboardManager : MonoBehaviour
                 break;
         }
 
-        // Get the relevant clip and play it.
-        //AudioClip clip = AudioManager.Instance.GetClip(text);
-        //if (clip != null)
-        //{
-        //    audioSource.PlayOneShot(clip);
-        //}
+         // Get the relevant clip and play it.
+        AudioClip clip = AudioManager.Instance.GetClip(text);
+        if (clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 
     public void AppendCharacter(string key)

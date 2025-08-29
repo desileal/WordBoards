@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Letterboard
   - GameManager
+  - Ledge
+  - InputController
+  - Cube
   layers:
   - Default
   - TransparentFX
