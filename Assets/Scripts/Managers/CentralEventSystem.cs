@@ -12,7 +12,7 @@ public class CentralEventSystem : MonoBehaviour
     #region Event Declaration
 
     public event Action<char> OnPlayerCubePoke;
-    public event Action OnLedgeCollision;
+    public event Action OnInteractionTypeChange;
 
     #endregion
 
@@ -21,6 +21,11 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeOnPlayerCubePoke(char c)
     {
         OnPlayerCubePoke?.Invoke(c);
+    }
+
+    public void InvokeOnInteractionTypeChange()
+    {
+        OnInteractionTypeChange?.Invoke();
     }
 
     #endregion

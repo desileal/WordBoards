@@ -6,10 +6,22 @@ using UnityEngine;
 public class Ledge : MonoBehaviour
 {
 
-    private Transform ledgePosition;
-    private bool isCorrect;
+    public Transform snapPoint;
 
-    public string dictationLetter { get; private set; }
+    public string targetID { get; private set; }
     public LedgeSlot slot { get; private set; }
-    public int ledgeIndex { get; private set; }
+
+
+    [Header("Optional Acceptance Volume")]
+    [Tooltip("If assigned, cube must be inside this trigger after grab release.")]
+    public Collider acceptanceBoundary; // should be a Trigger
+
+
+    public bool IsInsideBoundary(Bounds cubeBounds)
+    {
+        if (acceptanceBoundary == null) return true; // no boundary means always valid
+        // Use bounds check for robustness (vs. just a point)
+        return acceptanceBoundary.bounds.Intersects(cubeBounds);
+    }
 }
+

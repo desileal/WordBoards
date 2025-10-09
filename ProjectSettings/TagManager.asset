@@ -9,6 +9,7 @@ TagManager:
   - Ledge
   - InputController
   - Cube
+  - PokeInput
   layers:
   - Default
   - TransparentFX

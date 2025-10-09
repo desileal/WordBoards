@@ -6,6 +6,8 @@ public class LedgeSpawner : MonoBehaviour
     public List<GameObject> spawnedLedges = new();
     public Transform centralSpawnLocation;
     public float portalSpacing = 0.5f;
+
+    private readonly Dictionary<string, Ledge> _ledges = new();
     
 
     public void SpawnLedges(string dictationWord)
@@ -32,4 +34,6 @@ public class LedgeSpawner : MonoBehaviour
         LedgeManager.Instance.ClearLedges();
         // CentralEventSystem.Instance.InvokeOnLedgesCleared();
     }
+
+    public bool TryGet(string id, out Ledge l) => _ledges.TryGetValue(id, out l);
 }

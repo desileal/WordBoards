@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -10,7 +11,7 @@ public class LedgeManager : MonoBehaviour
     // Singleton for easy access
     public static LedgeManager Instance;
 
-    private Dictionary<string, Transform> ledges = new Dictionary<string, Transform>();
+    private Dictionary<string, Ledge> _ledges = new Dictionary<string, Ledge>();
 
     private void Awake()
     {
@@ -34,8 +35,21 @@ public class LedgeManager : MonoBehaviour
 
     }
 
+    public void AddLedges()
+    {
+        _ledges.Clear();
+
+        IEnumerable<Ledge> list = _ledges.OfType<Ledge>();
+        //foreach(var ledge in FindObjectsByType<>())
+        //{
+
+        //}
+    }
+
     public void ClearLedges()
     {
-        ledges.Clear();
+        _ledges.Clear();
     }
+
+    public bool TryGet(string id, out Ledge l) => _ledges.TryGetValue(id, out l);
 }
