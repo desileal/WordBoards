@@ -7,7 +7,6 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
-using Random = UnityEngine.Random;
 
 /// <summary>
 /// Interaction defines the mode of selection for the user and determines how they will interact with the system.
@@ -33,6 +32,7 @@ public enum InteractionModality
 
 public class CubeInteraction : MonoBehaviour
 {
+    CentralEventSystem CES;
     
     public Interaction interactionType;
     //public InteractionModality interactionModality;
@@ -78,8 +78,6 @@ public class CubeInteraction : MonoBehaviour
 
     public Transform cubeSpawnPosition;
     
-    MaterialCycler materialCycler;
-
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
@@ -96,10 +94,20 @@ public class CubeInteraction : MonoBehaviour
         //cubeSpawnPosition = this.transform;
     }
 
-    private void UpdateCubeInteraction()
+    private void Start()
+    {
+        CES = CentralEventSystem.Instance;
+
+        if (CES != null)
+        {
+            CES.OnInteractionTypeChange += UpdateCubeInteraction;
+        }
+    }
+
+    private void UpdateCubeInteraction(Interaction interaction)
     {
         Debug.Log("Updating Cube Interaction modalities...");
-        switch (interactionType)
+        switch (interaction)
         {
             case Interaction.Grab:
                 SetGrabActive();
@@ -221,6 +229,7 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
+    // TODO - Invoke OnPlayerLetterSelected 
     private bool CorrectLetterSelected()
     {
 
@@ -329,7 +338,7 @@ public class CubeInteraction : MonoBehaviour
         Debug.Log($"User selected {interaction} interaction. Setting CubeInteraction.interactionType to {interaction}...");
         interactionType = (Interaction)Enum.Parse(typeof(Interaction), interaction);
 
-        UpdateCubeInteraction();
+        //UpdateCubeInteraction();
     }
 
 }

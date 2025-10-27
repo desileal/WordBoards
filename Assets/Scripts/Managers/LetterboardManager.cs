@@ -11,7 +11,7 @@ public class LetterboardManager : MonoBehaviour
     // private string currentInput = "";
 
     private GameObject gameManagerObject;
-    private GameManager gameManager;
+    private SessionManager gameManager;
 
     private AudioManager audioManager;
     private AudioSource audioSource;
@@ -23,7 +23,7 @@ public class LetterboardManager : MonoBehaviour
     public void Awake()
     {
         gameManagerObject = GameObject.FindGameObjectWithTag("GameManager");
-        gameManager = gameManagerObject.GetComponent<GameManager>();
+        gameManager = gameManagerObject.GetComponent<SessionManager>();
         audioManager = gameManagerObject.GetComponent<AudioManager>();
     }
 

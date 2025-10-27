@@ -8,7 +8,8 @@ public class Ledge : MonoBehaviour
 
     public Transform snapPoint;
 
-    public string targetID { get; private set; }
+    [SerializeField]
+    public string targetID;
     public LedgeSlot slot { get; private set; }
 
 

@@ -18807,6 +18807,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   snapPoint: {fileID: 787167284}
+  targetID: D
   acceptanceBoundary: {fileID: 787167286}
 --- !u!1 &788043781
 GameObject:
@@ -26481,6 +26482,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1118647353}
+  - component: {fileID: 1118647354}
   m_Layer: 0
   m_Name: TrainingManager
   m_TagString: Untagged
@@ -26503,6 +26505,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1118647354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118647352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12d824a50feaec94bb9950ba04a596e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trainingWords: []
+  testWords:
+  - 00000
+  - 12345
+  - DESIREE
+  - BUG
+  - FLY
+  - SAP
+  - SAP
 --- !u!1 &1125665532
 GameObject:
   m_ObjectHideFlags: 0
