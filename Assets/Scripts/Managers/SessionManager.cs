@@ -55,6 +55,8 @@ public class SessionManager : MonoBehaviour
 
     public bool trainingIsReady = false;
 
+    [SerializeField] public GameObject objectSpawnLocation;
+
     CentralEventSystem CES;
 
 
@@ -97,18 +99,41 @@ public class SessionManager : MonoBehaviour
     // event fired every time user makes progress in task or phase
     // method subscribed to that event that passes session status game object and then updates the sessionStatus
     // bridge will also subscribe to same event, serialize and send it
-    public void UpdateSessionStatus(char c)
+    private void UpdateSessionStatus(string s)
     {
 
     }
 
-    public void StartTraining()
+    // get x, y, z locations of top and bottom of the quad
+    // top transform is the anchor for cube game objects
+    // bottom transform is the anchor for ledge game objects
+    public void SetObjectSpawnLocations ()
+    {
+        Bounds bounds = objectSpawnLocation.GetComponent<Renderer>().bounds;
+        float height = bounds.size.y;
+
+        Vector3 centerHeight = bounds.center;
+
+        Vector3 topAnchor = centerHeight + objectSpawnLocation.transform.up * (height / 2f);
+        Vector3 bottomAnchor = centerHeight - objectSpawnLocation.transform.up * (height / 2f);
+        // invoke set spawn locations in StepManager
+        CES.InvokeOnSetCubeSpawnAnchor(topAnchor);
+        CES.InvokeOnSetLedgeSpawnAnchor(bottomAnchor);
+    }
+
+    private void StartWarmup ()
+    {
+
+    }
+
+    // Invoked after the spawning locations have been calibrated
+    private void StartTraining()
     {
         CES?.InvokeOnTrainingStart();
     }
 
     // Starts testing phase through Testing Manager
-    public void StartTesting ()
+    private void StartTesting ()
     {
 
     }

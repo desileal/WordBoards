@@ -11,10 +11,12 @@ public class CentralEventSystem : MonoBehaviour
 
     #region Event Declaration
 
-    public event Action<char> OnPlayerCubePoke;
+    public event Action<Vector3> OnSetCubeSpawnAnchor;
+    public event Action<Vector3> OnSetLedgeSpawnAnchor;
+    public event Action<string> OnPlayerCubePoke;
     public event Action<Interaction> OnInteractionTypeChange;
-    public event Action<char> OnPlayerCubeReleased;
-    public event Action<char> OnPlayerLetterSelection;
+    public event Action<string> OnPlayerCubeReleased;
+    public event Action<string> OnPlayerLetterSelection;
     public event Action OnNextStep;
     public event Action<string> OnSetStepWord;
     public event Action OnStepComplete;
@@ -28,9 +30,19 @@ public class CentralEventSystem : MonoBehaviour
 
     #region Event wrappers for external use
 
-    public void InvokeOnPlayerCubePoke(char c)
+    public void InvokeOnSetCubeSpawnAnchor(Vector3 anchor)
     {
-        OnPlayerCubePoke?.Invoke(c);
+        OnSetCubeSpawnAnchor?.Invoke(anchor);
+    }
+
+    public void InvokeOnSetLedgeSpawnAnchor(Vector3 anchor)
+    {
+        OnSetLedgeSpawnAnchor?.Invoke(anchor);
+    }
+
+    public void InvokeOnPlayerCubePoke(string s)
+    {
+        OnPlayerCubePoke?.Invoke(s);
     }
 
     public void InvokeOnInteractionTypeChange(Interaction interaction)
@@ -38,14 +50,14 @@ public class CentralEventSystem : MonoBehaviour
         OnInteractionTypeChange?.Invoke(interaction);
     }
 
-    public void InvokeOnPlayerCubeReleased(char c)
+    public void InvokeOnPlayerCubeReleased(string s)
     {
-        OnPlayerCubeReleased?.Invoke(c);
+        OnPlayerCubeReleased?.Invoke(s);
     }
 
-    public void InvokeOnPlayerLetterSelection(char c)
+    public void InvokeOnPlayerLetterSelection(string s)
     {
-        OnPlayerLetterSelection?.Invoke(c);
+        OnPlayerLetterSelection?.Invoke(s);
     }
 
     public void InvokeOnNextStep()

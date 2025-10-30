@@ -40,9 +40,10 @@ public class CubeInteraction : MonoBehaviour
     public Transform ledgeSpawnRoot;
     public TextMeshPro letterText;
 
-    private string targetID;
+    public string targetID;
     public Ledge targetLedge;
     private bool ledgeCollision = false;
+    private bool hasTarget;
 
     [Header("Grab Settings")]
     // 
@@ -75,9 +76,12 @@ public class CubeInteraction : MonoBehaviour
     private Coroutine _moveRoutine;
     private bool _isSnapping;
     private bool _isHeld; // set by OnGrabSelected/OnGrabReleased
-
-    public Transform cubeSpawnPosition;
     
+    public CubeInteraction(string id)
+    {
+        targetID = id;
+    }
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
@@ -207,11 +211,12 @@ public class CubeInteraction : MonoBehaviour
         }
         else if (returnToStartIfInvalid)
         {
-            Debug.Log("Return to start"); 
-            ReturnToStart();
-        }
+            Debug.Log($"Collision with incorrect ledge. Returning cube {targetID} to starting position"); 
+            ReturnToStartPosition(); 
+        }     
     }
 
+    // invoked by correctplayerletterselection
     private void HandleGrabInteraction(Transform ledgeTransform)
     {
         bool correctSelection = CorrectLetterSelected();
@@ -220,7 +225,7 @@ public class CubeInteraction : MonoBehaviour
         {
             // else put cube back to root spawn location
             Debug.Log("Resetting cube to starting position.");
-            ReturnToStart();
+            ReturnToStartPosition();
             //ResetToStartingPosition();
         }
         else
@@ -232,7 +237,7 @@ public class CubeInteraction : MonoBehaviour
     // TODO - Invoke OnPlayerLetterSelected 
     private bool CorrectLetterSelected()
     {
-
+        CES.InvokeOnPlayerLetterSelection(targetID);
         return true;
     }
 
@@ -275,7 +280,7 @@ public class CubeInteraction : MonoBehaviour
                                              snapDuration));
     }
 
-    private void ReturnToStart()
+    private void ReturnToStartPosition()
     {
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
         _moveRoutine = StartCoroutine(MoveTo(_startPos, _startRot, returnDuration));
@@ -283,7 +288,7 @@ public class CubeInteraction : MonoBehaviour
 
     private IEnumerator MoveTo(Vector3 pos, Quaternion rot, float duration)
     {
-        _isSnapping = true;
+        _isSnapping = true;              
 
         bool prevKinematic = _rb.isKinematic;
         _rb.isKinematic = true;
