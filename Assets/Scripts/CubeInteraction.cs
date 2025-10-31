@@ -30,6 +30,9 @@ public enum InteractionModality
     None
 }
 
+/// <summary>
+/// 
+/// </summary>
 public class CubeInteraction : MonoBehaviour
 {
     CentralEventSystem CES;
@@ -37,11 +40,12 @@ public class CubeInteraction : MonoBehaviour
     public Interaction interactionType;
     //public InteractionModality interactionModality;
     public GameObject cube;
-    public Transform ledgeSpawnRoot;
-    public TextMeshPro letterText;
+    public Transform ledgeSpawnRoot; // delete?
+    public TextMeshPro letterText; //delete 
 
+    // letter of the cube
     public string targetID;
-    public Ledge targetLedge;
+    public Ledge targetLedge; //  delete ?
     private bool ledgeCollision = false;
     private bool hasTarget;
 
@@ -50,8 +54,6 @@ public class CubeInteraction : MonoBehaviour
     public GameObject grabInteraction;
     // Allow collider and snap check on grab release
     public bool grabEnabled;
-    // Cube must be inside the ledge boundary/collider on release to snap
-    public bool requireCubeInsideLedgeBoundaryToSnap;
 
     [Header("Poke Settings")]
     // Poke interaction that is a child of the cube interaction
@@ -80,6 +82,7 @@ public class CubeInteraction : MonoBehaviour
     public CubeInteraction(string id)
     {
         targetID = id;
+        
     }
 
     private void Awake()
@@ -108,6 +111,7 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
+    // TODO - make this modular to retrive from the session manager
     private void UpdateCubeInteraction(Interaction interaction)
     {
         Debug.Log("Updating Cube Interaction modalities...");
@@ -133,7 +137,8 @@ public class CubeInteraction : MonoBehaviour
         grabEnabled = false;
         pokeEnabled = true;
         pokeInteraction.SetActive(true);
-        Debug.Log("Grab set active, Poke set inactive.");
+        interactionType = Interaction.Poke;
+        Debug.Log("Poke set active, Grab set inactive.");
     }
 
     private void SetGrabActive()
@@ -142,6 +147,7 @@ public class CubeInteraction : MonoBehaviour
         grabEnabled = true;
         pokeEnabled = false;
         pokeInteraction.SetActive(false);
+        interactionType = Interaction.Grab;
         Debug.Log("Grab set active, Poke set inactive.");
     }
 
@@ -154,13 +160,19 @@ public class CubeInteraction : MonoBehaviour
         Debug.Log("Detected a collision.");
         if (_isSnapping || targetLedge == null) return;
 
+        if(!CorrectLetterSelected(other.GetComponent<Ledge>().targetID))
+        {
+            Debug.Log($"Incorrect letter selected for target {targetID}");
+            return;
+        }
 
         // Is this a poke source?
         if (IsPokeSource(other) && !grabEnabled)
         {
-            Debug.Log("Poked cube");
+            Debug.Log($"Poked cube");
             // Poke logic: immediate snap to its matching ledge
-            SnapToLedge(Interaction.Poke);
+            // TODO - implement logic to see if the next letter matches the targetID
+            SnapToLedge();
         }
         // check of other collider is a ledge and set a flag to that
         if (other.CompareTag("Ledge"))
@@ -185,9 +197,10 @@ public class CubeInteraction : MonoBehaviour
         return ((1 << other.gameObject.layer)) != 0 || other.CompareTag("PokePointer");
     }
 
+    // referenced from Unity GrabInteraction game object
     public void OnGrabSelected() 
     {
-        Debug.Log($"Grabbed cube.");
+        Debug.Log($"Grab   bed cube.");
         _isHeld = true; 
     }
 
@@ -204,10 +217,9 @@ public class CubeInteraction : MonoBehaviour
         if (!grabEnabled || _isSnapping || targetLedge == null) return;
 
         var cubeBounds = ComputeWorldBounds();
-        bool inside = targetLedge.IsInsideBoundary(cubeBounds);
-        if (!requireCubeInsideLedgeBoundaryToSnap || inside)
+        if (targetLedge.IsInsideBoundary(cubeBounds))
         {
-            HandleGrabInteraction(targetLedge.transform);
+            HandleGrabInteraction();
         }
         else if (returnToStartIfInvalid)
         {
@@ -217,9 +229,9 @@ public class CubeInteraction : MonoBehaviour
     }
 
     // invoked by correctplayerletterselection
-    private void HandleGrabInteraction(Transform ledgeTransform)
+    private void HandleGrabInteraction()
     {
-        bool correctSelection = CorrectLetterSelected();
+        //bool correctSelection = CorrectLetterSelected();
         // if letter is correct to corresponding ledge object, snap to ledge and set inactive
         if (!ledgeCollision)
         {
@@ -230,52 +242,37 @@ public class CubeInteraction : MonoBehaviour
         }
         else
         {
-            SnapToLedge(Interaction.Grab);
+            SnapToLedge();
         }
     }
 
     // TODO - Invoke OnPlayerLetterSelected 
-    private bool CorrectLetterSelected()
+    private bool CorrectLetterSelected(string selectedLetter)
     {
-        CES.InvokeOnPlayerLetterSelection(targetID);
-        return true;
+        if (selectedLetter == targetID)
+        {
+            CES.InvokeOnNextStepTask(targetID);
+            return true;
+        }
+          
+        return false;
     }
 
-    // TODO - delete this
-    private void SnapToLedge(Interaction mode)
+    // 
+    private void SnapToLedge()
     {
         if (targetLedge?.snapPoint == null) return;
 
+
         float cubeHeight = mainCollider.bounds.size.y;
 
-        Debug.Log($"cubeHeight for {mode.ToString()} is {cubeHeight}");
+        Debug.Log($"cubeHeight is {cubeHeight}");
 
         // Adjust the snap position to sit just above the ledge
         Vector3 snapPosition = targetLedge.snapPoint.position + new Vector3(0f, cubeHeight / 2f, 0f);
 
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
         _moveRoutine = StartCoroutine(MoveTo(snapPosition,
-                                             snapRotation ? targetLedge.snapPoint.rotation : transform.rotation,
-                                             snapDuration));
-    }
-
-    /// <summary>
-    /// When a cube is dragged and released into the proper slot that the letter is intended to be to spell the set word.
-    /// 
-    /// </summary>
-    private void SnapToLedge(Transform ledgeTransform)
-    {
-        // TODO
-        // get the cube that user is interacting with and place it in proper location
-        cube.SetActive(false);
-        cube.transform.position = ledgeTransform.position;
-        // reset rotation so that it is the original rotation
-        // get ledge position and add (0.55 * cube height) so that it sits above ledge
-
-        if (targetLedge?.snapPoint == null) return;
-
-        if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-        _moveRoutine = StartCoroutine(MoveTo(targetLedge.snapPoint.position,
                                              snapRotation ? targetLedge.snapPoint.rotation : transform.rotation,
                                              snapDuration));
     }
@@ -327,6 +324,7 @@ public class CubeInteraction : MonoBehaviour
     }
 
     // Optional public reset
+    // TODO - delete
     public void ResetHome()
     {
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);

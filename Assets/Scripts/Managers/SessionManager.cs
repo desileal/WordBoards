@@ -45,6 +45,9 @@ public enum SessionModule
     InTesting
 }
 
+/// <summary>
+/// 
+/// </summary>
 public class SessionManager : MonoBehaviour
 {
     [SerializeField] private TrainingManager trainingManager;
@@ -52,6 +55,8 @@ public class SessionManager : MonoBehaviour
 
     // object that holds current status to be serialized to dashboard
     private SessionStatus sessionStatus;
+
+    public Interaction currentInteractionType;
 
     public bool trainingIsReady = false;
 
@@ -66,10 +71,12 @@ public class SessionManager : MonoBehaviour
         CES = CentralEventSystem.Instance;
 
         sessionStatus = new SessionStatus();
+        currentInteractionType = Interaction.None;
 
         if (CES != null)
         {
-            CES.OnPlayerLetterSelection += UpdateSessionStatus;
+            CES.OnNextStepTask += UpdateSessionStatus;
+            CES.OnInteractionTypeChange += SetSessionInteractionType;
         }
         if (trainingManager == null)
         {
@@ -99,9 +106,15 @@ public class SessionManager : MonoBehaviour
     // event fired every time user makes progress in task or phase
     // method subscribed to that event that passes session status game object and then updates the sessionStatus
     // bridge will also subscribe to same event, serialize and send it
+    // TODO
     private void UpdateSessionStatus(string s)
     {
 
+    }
+
+    private void SetSessionInteractionType(Interaction interaction)
+    {
+        currentInteractionType = interaction;
     }
 
     // get x, y, z locations of top and bottom of the quad

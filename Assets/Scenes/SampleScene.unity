@@ -16319,6 +16319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cubeInteractionPrefab: {fileID: 0}
+  ledgePrefab: {fileID: 0}
   blockOffset: 0.3
 --- !u!1 &674260036
 GameObject:
@@ -18483,53 +18484,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 313674892}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &780672376
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 780672378}
-  - component: {fileID: 780672377}
-  m_Layer: 0
-  m_Name: LedgeManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &780672377
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 780672376}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3dfdd78ae775409498feeef251abaa94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnedLedges: []
-  centralSpawnLocation: {fileID: 104703466}
-  portalSpacing: 0.5
---- !u!4 &780672378
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 780672376}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &781219399
 GameObject:
@@ -26321,7 +26275,7 @@ GameObject:
   - component: {fileID: 1113863305}
   m_Layer: 0
   m_Name: SessionManager
-  m_TagString: Untagged
+  m_TagString: GameManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26355,6 +26309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trainingManager: {fileID: 0}
   testingManager: {fileID: 0}
+  currentInteractionType: 0
   trainingIsReady: 0
   objectSpawnLocation: {fileID: 1726055038}
 --- !u!1 &1114163849
@@ -26635,7 +26590,12 @@ MonoBehaviour:
   - BUG
   - FLY
   - SAP
-  - SAP
+  - BIRD
+  - LEAF
+  - SOIL
+  - PLANT
+  - GRASS
+  - WATER
 --- !u!1 &1125665532
 GameObject:
   m_ObjectHideFlags: 0
@@ -50064,10 +50024,10 @@ MonoBehaviour:
   cube: {fileID: 4074169800050072122}
   ledgeSpawnRoot: {fileID: 104703466}
   letterText: {fileID: 2112610040}
+  targetID: 
   targetLedge: {fileID: 787167290}
   grabInteraction: {fileID: 8548961662629467851}
   grabEnabled: 0
-  requireCubeInsideLedgeBoundaryToSnap: 0
   pokeInteraction: {fileID: 1595249629}
   pokeEnabled: 0
   pokeSourceTags: []
@@ -50100,7 +50060,6 @@ MonoBehaviour:
   returnToStartIfInvalid: 1
   returnDuration: 0.15
   mainCollider: {fileID: 2386021826620802002}
-  cubeSpawnPosition: {fileID: 622329803}
 --- !u!114 &4537733177737450886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50638,7 +50597,6 @@ SceneRoots:
   - {fileID: 1118647353}
   - {fileID: 673013566}
   - {fileID: 1173485486}
-  - {fileID: 780672378}
   - {fileID: 295173715}
   - {fileID: 2598301319573410154}
   - {fileID: 359947903}

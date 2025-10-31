@@ -19,6 +19,7 @@ public class CentralEventSystem : MonoBehaviour
     public event Action<string> OnPlayerLetterSelection;
     public event Action OnNextStep;
     public event Action<string> OnSetStepWord;
+    public event Action<string> OnNextStepTask;
     public event Action OnStepComplete;
     public event Action OnTrainingStart;
     public event Action OnNextTrainingPhase;
@@ -68,6 +69,11 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeSetNextStepWord(string s)
     {
         OnSetStepWord?.Invoke(s);
+    }
+
+    public void InvokeOnNextStepTask(string s)
+    {
+        OnNextStepTask?.Invoke(s);
     }
 
     public void InvokeOnStepComplete()

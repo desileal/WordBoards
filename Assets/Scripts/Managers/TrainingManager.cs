@@ -67,7 +67,6 @@ public class TrainingManager : MonoBehaviour
             CES.OnNextTrainingPhase -= NextTrainingPhase;
             CES.OnTrainingEnd -= EndTraining;
         }   
-
     }
 
     //

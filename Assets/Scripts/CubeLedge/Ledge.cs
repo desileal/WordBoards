@@ -10,7 +10,6 @@ public class Ledge : MonoBehaviour
 
     [SerializeField]
     public string targetID;
-    public LedgeSlot slot { get; private set; }
 
 
     [Header("Optional Acceptance Volume")]
