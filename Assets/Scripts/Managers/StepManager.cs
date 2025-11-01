@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using NUnit.Framework;
+using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 
@@ -9,7 +10,8 @@ public class StepManager : MonoBehaviour
 {
     // contains full word and tracks within that word
     // next step is next word, next task is next letter
-    [SerializeField] public GameObject cubeInteractionPrefab;
+    [SerializeField] public GameObject pokeBlockPrefab;
+    [SerializeField] public GameObject grabBlockPrefab;
     [SerializeField] public GameObject ledgePrefab;
 
     private SessionManager sessionManager;
@@ -31,12 +33,8 @@ public class StepManager : MonoBehaviour
     private Vector3 ledgesAnchor;
     [SerializeField] private float blockOffset;
 
-    // individual CubeInteraction classes for each letter
-    private List<CubeInteraction> interactionBlocks = new();
     // individual game objects for each cube in the scene that has a CubeInteraction script attached
     private List<GameObject> interactionGameObjects = new();
-    // individual Ledge classes for each letter, to be matched with the CubeInteraction game objects
-    private List<Ledge> blockLedges = new();
     // individual game objects for each ledge in the scene
     private List<GameObject> ledgeGameObjects = new();
 
@@ -49,7 +47,7 @@ public class StepManager : MonoBehaviour
 
         if (CES != null)
         {
-            CES.OnPlayerLetterSelection += UpdateLettersSpelled;
+            CES.OnPlayerLetterSelection += CheckPlayerLetterSelection;
             CES.OnNextStep += DestroyInteractionBlocks;
             CES.OnNextStep += DestroyBlockLedges;
             CES.OnSetStepWord += SetStepTask;
@@ -87,10 +85,7 @@ public class StepManager : MonoBehaviour
     // display word to be spelled
     private void DestroyInteractionBlocks()
     {
-        foreach (CubeInteraction block in interactionBlocks)
-        {
-            Destroy(block);
-        }
+ 
         foreach(GameObject block in interactionGameObjects)
         {
             Destroy(block);
@@ -99,10 +94,6 @@ public class StepManager : MonoBehaviour
 
     private void DestroyBlockLedges()
     {
-        foreach(Ledge ledge in blockLedges)
-        {
-            Destroy(ledge);
-        }
         foreach(GameObject ledge in ledgeGameObjects)
         {
             Destroy(ledge);
@@ -111,13 +102,11 @@ public class StepManager : MonoBehaviour
 
     private void ClearInteractionBlocksLists()
     {
-        interactionBlocks.Clear();
         interactionGameObjects.Clear();
     }
 
     private void ClearBlockLedgesLists()
     {
-        blockLedges.Clear();
         ledgeGameObjects.Clear();
     }
 
@@ -156,24 +145,40 @@ public class StepManager : MonoBehaviour
         {
             // spawn game object at local position
             float localXPos = startXPos + (i * blockOffset);
-            GameObject cube = Instantiate(cubeInteractionPrefab, new Vector3(localXPos, interactionBlocksAnchor.y, interactionBlocksAnchor.z), Quaternion.identity);
-            
-            // TODO - use a constructor and make new CubeInteraction ?
-            cube.GetComponent<CubeInteraction>().targetID = letter;
-            cube.GetComponent<CubeInteraction>().letterText.SetText(letter);
-            cube.GetComponent<CubeInteraction>().interactionType = sessionManager.currentInteractionType;
+            // blocks are defined depending on Interaction from SessionManager
+            GameObject block = SetBlockParameters(letter, localXPos);
+                        
             // add game objects to list
-            interactionGameObjects.Add(cube);
+            interactionGameObjects.Add(block);
             
             i++;
         }
+    }
+
+    private GameObject SetBlockParameters(string letter, float xPos)
+    {
+        GameObject cube = new();
+        switch(sessionManager.currentInteractionType)
+        {
+            case(Interaction.Poke):
+                cube = Instantiate(pokeBlockPrefab, new Vector3(xPos, interactionBlocksAnchor.y, interactionBlocksAnchor.z), Quaternion.identity);
+                cube.GetComponent<PokeBlock>().targetID = letter;
+                cube.GetComponent<PokeBlock>().GetComponent<TextMeshPro>().text = letter;
+                break;
+            case (Interaction.Grab):
+                cube = Instantiate(grabBlockPrefab, new Vector3(xPos, interactionBlocksAnchor.y, interactionBlocksAnchor.z), Quaternion.identity);
+                cube.GetComponent<GrabBlock>().targetID = letter;
+                cube.GetComponent<GrabBlock>().GetComponent<TextMeshPro>().text = letter;
+                break;
+        }
+        return cube;
     }
 
     // randomize order of blocks that is displayed in UI
     // add more letters/random blocks through phase progression
     private string[] ShuffleArray()
     {
-        string[] shuffled = _wordLetters ;
+        string[] shuffled = _wordLetters;
         for (int t = 0; t < shuffled.Length; t++)
         {
             string tmp = shuffled[t];
@@ -184,15 +189,31 @@ public class StepManager : MonoBehaviour
         return shuffled;
     }
 
-    // add cube interaction scripts to list
-    private void ReferenceSpawnedObjectScripts()
-    {
-
-    }
-
-
     // verify if cube poked or grab collision matches the next letter in the task
 
+    private void CheckPlayerLetterSelection(string letter, int i)
+    {
+        if (letter != _nextLetter)
+        {
+            Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_nextLetter}");
+            if (sessionManager.currentInteractionType == Interaction.Grab)
+            {
+                Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {i}.");
+                // call reset to home with transform from interaction block at _currentLetterIndex
+                interactionGameObjects.ElementAt(i).GetComponent<GrabBlock>().ReturnToStartPosition();
+            }
+        }
+        else
+        {
+            // invoke on snap letter to ledge with ledge transform at current LetterIndex
+            Transform ledgeTransform = ledgeGameObjects.ElementAt(_currentLetterIndex).GetComponent<Transform>();
+            // TODO - will this be invoked on ALL blocks?
+            // OR don't invoke an event but call the method specific to the GrabBlock
+            interactionGameObjects.ElementAt(i).GetComponent<CubeInteraction>().SnapToLedge(ledgeTransform);
+            //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
+            UpdateLettersSpelled(letter);
+        }
+    }
 
     //  Updates the Task with the letters that have been spelled
     private void UpdateLettersSpelled(string s)
@@ -219,6 +240,5 @@ public class StepManager : MonoBehaviour
         return x;
     }
 
-    
-
+ 
 }

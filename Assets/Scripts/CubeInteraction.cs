@@ -9,17 +9,6 @@ using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
 
 /// <summary>
-/// Interaction defines the mode of selection for the user and determines how they will interact with the system.
-/// Only one interaction type can be set at a time.
-/// </summary>
-public enum Interaction
-{
-    Grab,
-    Poke,
-    None
-}
-
-/// <summary>
 /// InteractionModality defines the user's input mode that they use to interact with objects and Interactions
 /// </summary>
 public enum InteractionModality
@@ -35,19 +24,19 @@ public enum InteractionModality
 /// </summary>
 public class CubeInteraction : MonoBehaviour
 {
-    CentralEventSystem CES;
+    protected CentralEventSystem CES;
     
-    public Interaction interactionType;
+    public Interaction interactionType; // delete
     //public InteractionModality interactionModality;
     public GameObject cube;
-    public Transform ledgeSpawnRoot; // delete?
     public TextMeshPro letterText; //delete 
 
     // letter of the cube
     public string targetID;
     public Ledge targetLedge; //  delete ?
-    private bool ledgeCollision = false;
-    private bool hasTarget;
+    protected bool hasTarget;
+
+    protected int listIndex;
 
     [Header("Grab Settings")]
     // 
@@ -72,12 +61,12 @@ public class CubeInteraction : MonoBehaviour
     [SerializeField] private Collider mainCollider;
 
     // ---- runtime state ----
-    private Rigidbody _rb;
-    private Vector3 _startPos;
-    private Quaternion _startRot;
-    private Coroutine _moveRoutine;
-    private bool _isSnapping;
-    private bool _isHeld; // set by OnGrabSelected/OnGrabReleased
+    protected Rigidbody _rb;
+    protected Vector3 _startPos;
+    protected Quaternion _startRot;
+    protected Coroutine _moveRoutine;
+    protected bool _isSnapping;
+    protected bool _isHeld; // set by OnGrabSelected/OnGrabReleased
     
     public CubeInteraction(string id)
     {
@@ -90,15 +79,6 @@ public class CubeInteraction : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _startPos = transform.position;
         _startRot = transform.rotation;
-
-        //if (targetLedge == null && !string.IsNullOrEmpty(targetID) && LedgeManager.Instance != null)
-        //{
-            //if (LedgeManager.Instance.TryGet(targetID, out var found))
-               // targetLedge = found;
-       // }
-
-        //SetInteraction();
-        //cubeSpawnPosition = this.transform;
     }
 
     private void Start()
@@ -151,139 +131,31 @@ public class CubeInteraction : MonoBehaviour
         Debug.Log("Grab set active, Poke set inactive.");
     }
 
-    /// <summary>
-    /// Handles collisions with the cube. Registers poke interactions and handles selection logic from there.
-    /// </summary>
-    /// <param name="other">The Collider that has collided with the cube collider </param>
-    private void OnTriggerEnter(Collider other)
+    // 
+    public void SnapToLedge(Transform ledgeTransform)
     {
-        Debug.Log("Detected a collision.");
-        if (_isSnapping || targetLedge == null) return;
 
-        if(!CorrectLetterSelected(other.GetComponent<Ledge>().targetID))
+        if (ledgeTransform == null)
         {
-            Debug.Log($"Incorrect letter selected for target {targetID}");
+            Debug.LogError("SnapToLedge received a null Ledge Transform");
             return;
         }
-
-        // Is this a poke source?
-        if (IsPokeSource(other) && !grabEnabled)
-        {
-            Debug.Log($"Poked cube");
-            // Poke logic: immediate snap to its matching ledge
-            // TODO - implement logic to see if the next letter matches the targetID
-            SnapToLedge();
-        }
-        // check of other collider is a ledge and set a flag to that
-        if (other.CompareTag("Ledge"))
-        {
-            Debug.Log("Cube collided with ledge.");
-            ledgeCollision = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        // check of other collider is a ledge and set a flag to that
-        if (other.CompareTag("Ledge"))
-        {
-            Debug.Log("Cube exited ledge collider.");
-            ledgeCollision = false;
-        }
-    }
-
-    private bool IsPokeSource(Collider other)
-    {
-        return ((1 << other.gameObject.layer)) != 0 || other.CompareTag("PokePointer");
-    }
-
-    // referenced from Unity GrabInteraction game object
-    public void OnGrabSelected() 
-    {
-        Debug.Log($"Grab   bed cube.");
-        _isHeld = true; 
-    }
-
-    /// <summary>
-    /// Called by grab system when the cube is released (When Unselect())
-    /// </summary>
-    public void OnGrabReleased()
-    {
-        Debug.Log($"Released cube of letter {targetID}");
-
-        // check to see where cube location is - if it triggered collision with the proper slot
-
-        _isHeld = false;
-        if (!grabEnabled || _isSnapping || targetLedge == null) return;
-
-        var cubeBounds = ComputeWorldBounds();
-        if (targetLedge.IsInsideBoundary(cubeBounds))
-        {
-            HandleGrabInteraction();
-        }
-        else if (returnToStartIfInvalid)
-        {
-            Debug.Log($"Collision with incorrect ledge. Returning cube {targetID} to starting position"); 
-            ReturnToStartPosition(); 
-        }     
-    }
-
-    // invoked by correctplayerletterselection
-    private void HandleGrabInteraction()
-    {
-        //bool correctSelection = CorrectLetterSelected();
-        // if letter is correct to corresponding ledge object, snap to ledge and set inactive
-        if (!ledgeCollision)
-        {
-            // else put cube back to root spawn location
-            Debug.Log("Resetting cube to starting position.");
-            ReturnToStartPosition();
-            //ResetToStartingPosition();
-        }
-        else
-        {
-            SnapToLedge();
-        }
-    }
-
-    // TODO - Invoke OnPlayerLetterSelected 
-    private bool CorrectLetterSelected(string selectedLetter)
-    {
-        if (selectedLetter == targetID)
-        {
-            CES.InvokeOnNextStepTask(targetID);
-            return true;
-        }
-          
-        return false;
-    }
-
-    // 
-    private void SnapToLedge()
-    {
-        if (targetLedge?.snapPoint == null) return;
-
 
         float cubeHeight = mainCollider.bounds.size.y;
 
         Debug.Log($"cubeHeight is {cubeHeight}");
 
         // Adjust the snap position to sit just above the ledge
-        Vector3 snapPosition = targetLedge.snapPoint.position + new Vector3(0f, cubeHeight / 2f, 0f);
+        Vector3 snapPosition = ledgeTransform.position + new Vector3(0f, cubeHeight / 2f, 0f);
 
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
         _moveRoutine = StartCoroutine(MoveTo(snapPosition,
-                                             snapRotation ? targetLedge.snapPoint.rotation : transform.rotation,
+                                             snapRotation ? ledgeTransform.rotation : transform.rotation,
                                              snapDuration));
     }
 
-    private void ReturnToStartPosition()
-    {
-        if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-        _moveRoutine = StartCoroutine(MoveTo(_startPos, _startRot, returnDuration));
-    }
 
-    private IEnumerator MoveTo(Vector3 pos, Quaternion rot, float duration)
+    public IEnumerator MoveTo(Vector3 pos, Quaternion rot, float duration)
     {
         _isSnapping = true;              
 
@@ -312,7 +184,7 @@ public class CubeInteraction : MonoBehaviour
 
 
     // Single-collider-friendly bounds (matches your current prefab)
-    private Bounds ComputeWorldBounds()
+    public Bounds ComputeWorldBounds()
     {
         var col = GetComponent<Collider>();
         if (col != null) return col.bounds;
@@ -333,15 +205,6 @@ public class CubeInteraction : MonoBehaviour
         _rb.angularVelocity = Vector3.zero;
         _isHeld = false;
         _isSnapping = false;
-    }
-
-
-    public void InteractionSelected(string interaction)
-    {
-        Debug.Log($"User selected {interaction} interaction. Setting CubeInteraction.interactionType to {interaction}...");
-        interactionType = (Interaction)Enum.Parse(typeof(Interaction), interaction);
-
-        //UpdateCubeInteraction();
     }
 
 }

@@ -5,17 +5,14 @@ using UnityEngine;
 /// </summary>
 public class Ledge : MonoBehaviour
 {
-
     public Transform snapPoint;
 
     [SerializeField]
     public string targetID;
 
-
     [Header("Optional Acceptance Volume")]
     [Tooltip("If assigned, cube must be inside this trigger after grab release.")]
     public Collider acceptanceBoundary; // should be a Trigger
-
 
     public bool IsInsideBoundary(Bounds cubeBounds)
     {

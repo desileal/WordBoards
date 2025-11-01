@@ -16,7 +16,7 @@ public class CentralEventSystem : MonoBehaviour
     public event Action<string> OnPlayerCubePoke;
     public event Action<Interaction> OnInteractionTypeChange;
     public event Action<string> OnPlayerCubeReleased;
-    public event Action<string> OnPlayerLetterSelection;
+    public event Action<string, int> OnPlayerLetterSelection;
     public event Action OnNextStep;
     public event Action<string> OnSetStepWord;
     public event Action<string> OnNextStepTask;
@@ -51,14 +51,9 @@ public class CentralEventSystem : MonoBehaviour
         OnInteractionTypeChange?.Invoke(interaction);
     }
 
-    public void InvokeOnPlayerCubeReleased(string s)
+    public void InvokeOnPlayerLetterSelection(string s, int i)
     {
-        OnPlayerCubeReleased?.Invoke(s);
-    }
-
-    public void InvokeOnPlayerLetterSelection(string s)
-    {
-        OnPlayerLetterSelection?.Invoke(s);
+        OnPlayerLetterSelection?.Invoke(s, i);
     }
 
     public void InvokeOnNextStep()

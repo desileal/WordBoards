@@ -46,6 +46,17 @@ public enum SessionModule
 }
 
 /// <summary>
+/// Interaction defines the mode of selection for the user and determines how they will interact with the system.
+/// Only one interaction type can be set at a time.
+/// </summary>
+public enum Interaction
+{
+    Grab,
+    Poke,
+    None
+}
+
+/// <summary>
 /// 
 /// </summary>
 public class SessionManager : MonoBehaviour
