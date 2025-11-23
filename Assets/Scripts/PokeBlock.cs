@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class PokeBlock : CubeInteraction
 {
-    public PokeBlock(string id) : base(id)
+    public PokeBlock(string id, int index) : base(id, index)
     {
         targetID = id;
+        listIndex = index;
     }
 
     /// <summary>
@@ -21,7 +22,7 @@ public class PokeBlock : CubeInteraction
         if (IsPokeSource(other))
         {
             Debug.Log($"Poked cube of letter, {targetID}");
-            CES.InvokeOnPlayerLetterSelection(targetID, listIndex);
+            CES.InvokeOnPlayerCubePoke(targetID, listIndex);
         }
 
     }

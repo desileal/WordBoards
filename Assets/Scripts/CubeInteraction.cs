@@ -25,30 +25,16 @@ public enum InteractionModality
 public class CubeInteraction : MonoBehaviour
 {
     protected CentralEventSystem CES;
-    
-    public Interaction interactionType; // delete
-    //public InteractionModality interactionModality;
-    public GameObject cube;
-    public TextMeshPro letterText; //delete 
+
+    public TextMeshPro letterText; // delete ?
 
     // letter of the cube
     public string targetID;
-    public Ledge targetLedge; //  delete ?
     protected bool hasTarget;
 
-    protected int listIndex;
+    // index where the interaction block is in the list of game object in StepManager
+    public int listIndex;
 
-    [Header("Grab Settings")]
-    // 
-    public GameObject grabInteraction;
-    // Allow collider and snap check on grab release
-    public bool grabEnabled;
-
-    [Header("Poke Settings")]
-    // Poke interaction that is a child of the cube interaction
-    public GameObject pokeInteraction;
-    // Allows snapping immediately when poked
-    public bool pokeEnabled;
     // Identifies different poke sources based on InteractionModality
     public string[] pokeSourceTags;
 
@@ -68,10 +54,10 @@ public class CubeInteraction : MonoBehaviour
     protected bool _isSnapping;
     protected bool _isHeld; // set by OnGrabSelected/OnGrabReleased
     
-    public CubeInteraction(string id)
+    public CubeInteraction(string id, int index)
     {
         targetID = id;
-        
+        listIndex = index;    
     }
 
     private void Awake()
@@ -87,49 +73,10 @@ public class CubeInteraction : MonoBehaviour
 
         if (CES != null)
         {
-            CES.OnInteractionTypeChange += UpdateCubeInteraction;
+            
         }
     }
 
-    // TODO - make this modular to retrive from the session manager
-    private void UpdateCubeInteraction(Interaction interaction)
-    {
-        Debug.Log("Updating Cube Interaction modalities...");
-        switch (interaction)
-        {
-            case Interaction.Grab:
-                SetGrabActive();
-                break;
-            case Interaction.Poke:
-                SetPokeActive();
-                break;
-            case Interaction.None:
-                grabInteraction.SetActive(true);
-                pokeInteraction.SetActive(true);
-                Debug.Log("Grab set active and Poke set active. No interaction type defined.");
-                break;
-        }
-    }
-
-    private void SetPokeActive()
-    {
-        grabInteraction.SetActive(false);
-        grabEnabled = false;
-        pokeEnabled = true;
-        pokeInteraction.SetActive(true);
-        interactionType = Interaction.Poke;
-        Debug.Log("Poke set active, Grab set inactive.");
-    }
-
-    private void SetGrabActive()
-    {
-        grabInteraction.SetActive(true);
-        grabEnabled = true;
-        pokeEnabled = false;
-        pokeInteraction.SetActive(false);
-        interactionType = Interaction.Grab;
-        Debug.Log("Grab set active, Poke set inactive.");
-    }
 
     // 
     public void SnapToLedge(Transform ledgeTransform)
@@ -152,6 +99,8 @@ public class CubeInteraction : MonoBehaviour
         _moveRoutine = StartCoroutine(MoveTo(snapPosition,
                                              snapRotation ? ledgeTransform.rotation : transform.rotation,
                                              snapDuration));
+
+
     }
 
 
@@ -193,18 +142,6 @@ public class CubeInteraction : MonoBehaviour
         if (r != null) return r.bounds;
 
         return new Bounds(transform.position, Vector3.one * 0.1f);
-    }
-
-    // Optional public reset
-    // TODO - delete
-    public void ResetHome()
-    {
-        if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-        transform.SetPositionAndRotation(_startPos, _startRot);
-        _rb.linearVelocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
-        _isHeld = false;
-        _isSnapping = false;
     }
 
 }

@@ -5,9 +5,10 @@ public class GrabBlock : CubeInteraction
 
     private bool ledgeCollision = false;
 
-    public GrabBlock(string id) : base(id)
+    public GrabBlock(string id, int index) : base(id, index)
     {
         targetID = id;
+        listIndex = index;
     }
 
     /// <summary>
@@ -22,7 +23,7 @@ public class GrabBlock : CubeInteraction
         // check of other collider is a ledge and set a flag to that
         if (other.CompareTag("Ledge"))
         {
-            Debug.Log("Grab block collided with ledge.");
+            Debug.Log($"Grab block of letter of {targetID} collided with ledge.");
             ledgeCollision = true;
         }
     }
@@ -40,7 +41,7 @@ public class GrabBlock : CubeInteraction
     // referenced from Unity GrabInteraction game object
     public void OnGrabSelected()
     {
-        Debug.Log($"Grabbed cube.");
+        Debug.Log($"Grabbed block of letter {targetID}.");
         _isHeld = true;
     }
 
@@ -54,12 +55,12 @@ public class GrabBlock : CubeInteraction
         // check to see where cube location is - if it triggered collision with the proper slot
 
         _isHeld = false;
-        if (!grabEnabled || _isSnapping) return;
+        if (_isSnapping) return;
 
         // var cubeBounds = ComputeWorldBounds();
         if (ledgeCollision) // previously checked targetLedge.IsInsideBoundary(cubeBounds)
         {
-            CES.InvokeOnPlayerLetterSelection(targetID, listIndex);
+            CES.InvokeOnPlayerGrabRelease(targetID, listIndex);
         }
         else
         {
@@ -73,24 +74,6 @@ public class GrabBlock : CubeInteraction
     {
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
         _moveRoutine = StartCoroutine(MoveTo(_startPos, _startRot, returnDuration));
-    }
-
-    // invoked by correctplayerletterselection
-    private void HandleGrabInteraction()
-    {
-        //bool correctSelection = CorrectLetterSelected();
-        // if letter is correct to corresponding ledge object, snap to ledge and set inactive
-        if (!ledgeCollision)
-        {
-            // else put cube back to root spawn location
-            Debug.Log("Resetting cube to starting position.");
-            ReturnToStartPosition();
-            //ResetToStartingPosition();
-        }
-        else
-        {
-            SnapToLedge(targetLedge.snapPoint);
-        }
     }
 
 }

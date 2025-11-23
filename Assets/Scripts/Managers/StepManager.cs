@@ -2,17 +2,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using NUnit.Framework;
+using OVR.OpenVR;
 using TMPro;
+using Unity.VisualScripting;
 using Unity.XR.CoreUtils;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
+/// <summary>
+/// 
+/// </summary>
+/// TODO: add extra blocks per word as the system progresses 
+/// Display the word being spelled or prompt it at the beginning of the step?
 public class StepManager : MonoBehaviour
 {
-    // contains full word and tracks within that word
-    // next step is next word, next task is next letter
+    
     [SerializeField] public GameObject pokeBlockPrefab;
     [SerializeField] public GameObject grabBlockPrefab;
-    [SerializeField] public GameObject ledgePrefab;
+    [SerializeField] public GameObject ledgePrefab; 
 
     private SessionManager sessionManager;
 
@@ -25,7 +32,9 @@ public class StepManager : MonoBehaviour
     // Current letters that have been spelled
     private string[] _lettersSpelled;
     // Next letter that will invoke correct collision
-    private string _nextLetter;
+    private string _currentCorrectLetter;
+    // index in ledgeGameObjects of the ledge that was last collided with
+    private int _lastCollidedLedge = 0;
 
     // position where interaction block game objects will spawn from
     private Vector3 interactionBlocksAnchor;
@@ -47,12 +56,14 @@ public class StepManager : MonoBehaviour
 
         if (CES != null)
         {
-            CES.OnPlayerLetterSelection += CheckPlayerLetterSelection;
+            CES.OnPlayerCubePoke += CheckPlayerPokeSelection;
+            CES.OnPlayerGrabRelease += CheckPlayerGrabSelection;
             CES.OnNextStep += DestroyInteractionBlocks;
             CES.OnNextStep += DestroyBlockLedges;
-            CES.OnSetStepWord += SetStepTask;
+            CES.OnSetStepWord += SetStepParameters;
             CES.OnSetCubeSpawnAnchor += SetInteractionBlocksAnchor;
             CES.OnSetLedgeSpawnAnchor += SetLedgesAnchor;
+            CES.OnLedgeCollision += UpdateLastCollidedLedge;
         }
 
         sessionManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<SessionManager>();
@@ -68,24 +79,25 @@ public class StepManager : MonoBehaviour
         ledgesAnchor = anchor;
     }
 
-    private void SetStepTask(string stepWord)
+    private void SetStepParameters(string stepWord)
     {
+        Debug.Log($"***** Setting parameters for stepWord {stepWord}");
         _stepWord = stepWord;
-        _wordLetters = new[] { _stepWord };
+        _wordLetters = new string[_stepWord.Length];
+        for(int i = 0; i < _stepWord.Length; i++)
+        {
+            _wordLetters[i] = stepWord[i].ToString();
+            //Debug.Log($"***** Appended {c} to _wordLetters *****");
+        }
         _currentLetterIndex = 0;
         _lettersSpelled = new string[_wordLetters.Length];
-        _nextLetter = _wordLetters[_currentLetterIndex];
+        _currentCorrectLetter = _wordLetters[_currentLetterIndex];
         SpawnLedgeObjects();
         SpawnInteractionBlockObjects();
     }
 
-    // initiate interaction blocks
-    // randomize order
-    // add extra letters
-    // display word to be spelled
     private void DestroyInteractionBlocks()
     {
- 
         foreach(GameObject block in interactionGameObjects)
         {
             Destroy(block);
@@ -122,8 +134,9 @@ public class StepManager : MonoBehaviour
             // spawn game object
             float localXPos = startXPos + (i * blockOffset);
             GameObject ledge = Instantiate(ledgePrefab, new Vector3(localXPos, ledgesAnchor.y, ledgesAnchor.z), Quaternion.identity);
+            Debug.Log($"***** Instantiated ledge prefab with letter {letter}, number {i} at x position {localXPos} *****");
 
-            ledge.GetComponent<Ledge>().targetID = letter;
+            ledge.GetComponent<Ledge>().letterIndex = i;
             // add game objects to list
             ledgeGameObjects.Add(ledge);
 
@@ -146,7 +159,8 @@ public class StepManager : MonoBehaviour
             // spawn game object at local position
             float localXPos = startXPos + (i * blockOffset);
             // blocks are defined depending on Interaction from SessionManager
-            GameObject block = SetBlockParameters(letter, localXPos);
+            GameObject block = InstantiateInteractiveBlock(letter, localXPos, i);
+            Debug.Log($"***** Instantiated block of letter {letter} at x = {localXPos} *****");
                         
             // add game objects to list
             interactionGameObjects.Add(block);
@@ -155,61 +169,124 @@ public class StepManager : MonoBehaviour
         }
     }
 
-    private GameObject SetBlockParameters(string letter, float xPos)
+    /// <summary>
+    /// Instantiates each block depending on the current InteractionType of the system
+    /// </summary>
+    /// <param name="letter"> letter displayed on the block </param>
+    /// <param name="xPos"> x position where the block is spawned </param>
+    /// <param name="index"> the element index where the block is in the list of interactionGameObjects </param>
+    /// <returns></returns>
+    private GameObject InstantiateInteractiveBlock(string letter, float xPos, int index)
     {
         GameObject cube = new();
         switch(sessionManager.currentInteractionType)
         {
-            case(Interaction.Poke):
+            case(InteractionType.Poke):
                 cube = Instantiate(pokeBlockPrefab, new Vector3(xPos, interactionBlocksAnchor.y, interactionBlocksAnchor.z), Quaternion.identity);
                 cube.GetComponent<PokeBlock>().targetID = letter;
-                cube.GetComponent<PokeBlock>().GetComponent<TextMeshPro>().text = letter;
+                cube.GetComponent<PokeBlock>().letterText.text = letter;
+                cube.GetComponent<PokeBlock>().listIndex = index;
                 break;
-            case (Interaction.Grab):
+            case (InteractionType.Grab):
                 cube = Instantiate(grabBlockPrefab, new Vector3(xPos, interactionBlocksAnchor.y, interactionBlocksAnchor.z), Quaternion.identity);
                 cube.GetComponent<GrabBlock>().targetID = letter;
-                cube.GetComponent<GrabBlock>().GetComponent<TextMeshPro>().text = letter;
+                cube.GetComponent<GrabBlock>().letterText.text = letter;
+                cube.GetComponent <GrabBlock>().listIndex = index;
                 break;
         }
         return cube;
     }
 
-    // randomize order of blocks that is displayed in UI
+    // randomize order of letters in current step
     // add more letters/random blocks through phase progression
     private string[] ShuffleArray()
     {
-        string[] shuffled = _wordLetters;
+        Debug.Log($"_wordLetters length: {_wordLetters.Length}");
+        string[] shuffled = new string[_wordLetters.Length];
+        for (int i = 0; i < _wordLetters.Length; i++)
+        {
+            shuffled[i] = _wordLetters[i];
+            Debug.Log($"***** Added {shuffled[i]} to shuffled");
+        }
         for (int t = 0; t < shuffled.Length; t++)
         {
             string tmp = shuffled[t];
             int r = Random.Range(t, shuffled.Length);
             shuffled[t] = shuffled[r];
+            //Debug.Log($"Shuffled at index {t} set to {shuffled[t]}");
             shuffled[r] = tmp;
         }
+        //Debug.Log($"***** Shuffled array length is {shuffled.Length} *****");
         return shuffled;
     }
 
-    // verify if cube poked or grab collision matches the next letter in the task
-
-    private void CheckPlayerLetterSelection(string letter, int i)
+    /// <summary>
+    /// Updates the index of the ledge that a grab block last collided with. Used to track if user made correct 
+    /// placement of the block for the current letter being spelled.
+    /// </summary>
+    /// <param name="i"> index of the ledge that grab block last collided with </param>
+    private void UpdateLastCollidedLedge (int i)
     {
-        if (letter != _nextLetter)
+        _lastCollidedLedge = i;
+    }
+
+    /// <summary>
+    /// verify if cube poked or grab collision matches the next letter in the task
+    /// </summary>
+    /// <param name="letter"> letter selected by user (poke or grab) </param>
+    /// <param name="i"> listIndex where the interaction block is in interactionGameObjects </param>
+    private void CheckPlayerPokeSelection(string letter, int i)
+    {
+        if (letter != _currentCorrectLetter)
         {
-            Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_nextLetter}");
-            if (sessionManager.currentInteractionType == Interaction.Grab)
-            {
-                Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {i}.");
-                // call reset to home with transform from interaction block at _currentLetterIndex
-                interactionGameObjects.ElementAt(i).GetComponent<GrabBlock>().ReturnToStartPosition();
-            }
+            Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_currentCorrectLetter}");
         }
         else
         {
+            Debug.Log($"***** Snapping letter {letter} to ledge at index {i} *****");
             // invoke on snap letter to ledge with ledge transform at current LetterIndex
             Transform ledgeTransform = ledgeGameObjects.ElementAt(_currentLetterIndex).GetComponent<Transform>();
             // TODO - will this be invoked on ALL blocks?
             // OR don't invoke an event but call the method specific to the GrabBlock
-            interactionGameObjects.ElementAt(i).GetComponent<CubeInteraction>().SnapToLedge(ledgeTransform);
+            interactionGameObjects.ElementAt(i).GetComponent<PokeBlock>().SnapToLedge(ledgeTransform);
+            //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
+            UpdateLettersSpelled(letter);
+        }
+    }
+
+    // TODO - clean this up
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="letter"></param>
+    /// <param name="cubeListIndex"></param>
+    /// <param name="ledgeIndex"></param>
+    private void CheckPlayerGrabSelection(string letter, int cubeListIndex)
+    {
+        if (letter != _currentCorrectLetter)
+        {
+            Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_currentCorrectLetter}");
+            Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {cubeListIndex}.");
+            // call reset to home with transform from interaction block at _currentLetterIndex
+            interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().ReturnToStartPosition();
+        }
+        // TODO - is there a way to yield of the ledge index has not been updated yet?
+        // should be updated before block is released
+        else if (_lastCollidedLedge != _currentLetterIndex)
+        {
+            Debug.Log($"Grab block for letter, {letter}, placed on wrong ledge.");
+            Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {cubeListIndex}.");
+            // call reset to home with transform from interaction block at _currentLetterIndex
+            interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().ReturnToStartPosition();
+        }
+        else
+        {
+            Debug.Log($"***** Snapping letter {letter} to ledge at index {cubeListIndex} *****");
+            // invoke on snap letter to ledge with ledge transform at current LetterIndex
+            Transform ledgeTransform = ledgeGameObjects.ElementAt(_lastCollidedLedge).GetComponent<Transform>();
+            // TODO - will this be invoked on ALL blocks?
+            // OR don't invoke an event but call the method specific to the GrabBlock
+            interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().SnapToLedge(ledgeTransform);
             //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
             UpdateLettersSpelled(letter);
         }
@@ -220,10 +297,10 @@ public class StepManager : MonoBehaviour
     {
         _lettersSpelled.Append(s);
         _currentLetterIndex++;
-        if (_currentLetterIndex <= _lettersSpelled.Length)
+        if (_currentLetterIndex < _lettersSpelled.Length)
         {
-            _nextLetter = _wordLetters[_currentLetterIndex];
-            CES.InvokeOnNextStepTask(_nextLetter);
+            _currentCorrectLetter = _wordLetters[_currentLetterIndex];
+            CES.InvokeOnNextStepTask(_currentCorrectLetter); // this invokes a function in session manager to send updated session status
         }
         else
         {
@@ -231,14 +308,17 @@ public class StepManager : MonoBehaviour
         }
     }
 
+    // Calculates the starting x position of each interactive block and ledge 
+    // Determined dynamically by the number of objects being spawned
+    // TODO: if adding extra letters separate functions for ledges and cubes since there will be more block objects
     private float CalculateStartXPos()
     {
         if (_wordLetters.Length <= 1)
             return 0;
 
         float x = (float)(ledgesAnchor.x - (0.5*_wordLetters.Length*blockOffset));
+        Debug.Log($"***** Calculated start x position for {_stepWord} to be {x}");
         return x;
     }
 
- 
 }

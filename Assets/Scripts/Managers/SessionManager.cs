@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -9,7 +10,7 @@ using UnityEngine;
 public class SessionStatus
 {
     private SessionModule sessionModule;
-    private Interaction interactionModality;
+    private InteractionType interactionModality;
     private TrainingPhase trainingPhase;
     private PhaseStep trainingPhaseStep;
     // word being spelled
@@ -25,7 +26,7 @@ public class SessionStatus
     }
 
     // session status when in training
-    public SessionStatus (SessionModule sessionModule, Interaction interactionModality, TrainingPhase trainingPhase, PhaseStep trainingPhaseStep, string stepWord, string currentTask, string completedTask)
+    public SessionStatus (SessionModule sessionModule, InteractionType interactionModality, TrainingPhase trainingPhase, PhaseStep trainingPhaseStep, string stepWord, string currentTask, string completedTask)
     {
         this.sessionModule = sessionModule;
         this.interactionModality = interactionModality;
@@ -49,7 +50,7 @@ public enum SessionModule
 /// Interaction defines the mode of selection for the user and determines how they will interact with the system.
 /// Only one interaction type can be set at a time.
 /// </summary>
-public enum Interaction
+public enum InteractionType
 {
     Grab,
     Poke,
@@ -67,7 +68,7 @@ public class SessionManager : MonoBehaviour
     // object that holds current status to be serialized to dashboard
     private SessionStatus sessionStatus;
 
-    public Interaction currentInteractionType;
+    public InteractionType currentInteractionType;
 
     public bool trainingIsReady = false;
 
@@ -82,12 +83,16 @@ public class SessionManager : MonoBehaviour
         CES = CentralEventSystem.Instance;
 
         sessionStatus = new SessionStatus();
-        currentInteractionType = Interaction.None;
+        currentInteractionType = InteractionType.None;
 
+        if (CES == null)
+        {
+            yield return new WaitUntil(() => CES != null);
+        }
         if (CES != null)
         {
             CES.OnNextStepTask += UpdateSessionStatus;
-            CES.OnInteractionTypeChange += SetSessionInteractionType;
+            //CES.OnInteractionTypeChange += SetSessionInteractionType;
         }
         if (trainingManager == null)
         {
@@ -123,9 +128,13 @@ public class SessionManager : MonoBehaviour
 
     }
 
-    private void SetSessionInteractionType(Interaction interaction)
+    // called from Unity
+    public void SetSessionInteractionType(string interaction)
     {
-        currentInteractionType = interaction;
+        Debug.Log($"Setting session interaction type to {interaction}");
+        if (interaction.Equals("Poke")) currentInteractionType = InteractionType.Poke;
+        else if (interaction.Equals("Grab")) currentInteractionType = InteractionType.Grab;
+        else currentInteractionType = InteractionType.None;
     }
 
     // get x, y, z locations of top and bottom of the quad
@@ -134,6 +143,10 @@ public class SessionManager : MonoBehaviour
     public void SetObjectSpawnLocations ()
     {
         Bounds bounds = objectSpawnLocation.GetComponent<Renderer>().bounds;
+        if (bounds == null)
+        {
+            Debug.LogError("Bounds are null");
+        }
         float height = bounds.size.y;
 
         Vector3 centerHeight = bounds.center;
@@ -141,8 +154,17 @@ public class SessionManager : MonoBehaviour
         Vector3 topAnchor = centerHeight + objectSpawnLocation.transform.up * (height / 2f);
         Vector3 bottomAnchor = centerHeight - objectSpawnLocation.transform.up * (height / 2f);
         // invoke set spawn locations in StepManager
+        
+        Debug.Log($"Setting object spawn locations for blocks at {topAnchor} and ledges at {bottomAnchor}");
+
+        GameObject calibrateButton = GameObject.FindGameObjectWithTag("Calibration");
+        Destroy( calibrateButton );
+
+        Destroy(objectSpawnLocation);
+        
         CES.InvokeOnSetCubeSpawnAnchor(topAnchor);
         CES.InvokeOnSetLedgeSpawnAnchor(bottomAnchor);
+        CES.InvokeOnTrainingStart(); // TODO: change this later, for testing purposes now
     }
 
     private void StartWarmup ()
@@ -151,7 +173,7 @@ public class SessionManager : MonoBehaviour
     }
 
     // Invoked after the spawning locations have been calibrated
-    private void StartTraining()
+    public void StartTraining()
     {
         CES?.InvokeOnTrainingStart();
     }

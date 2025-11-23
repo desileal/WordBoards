@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
+// Phases that user progresses through during training, increasing in complexity
 public enum TrainingPhase
 {
     NotStarted,
@@ -12,6 +13,7 @@ public enum TrainingPhase
     Done
 }
 
+// There are three steps (word tasks) in each training phase
 public enum PhaseStep
 {
     StepOne,
@@ -26,9 +28,12 @@ public enum PhaseStep
 /// </summary>
 public class TrainingManager : MonoBehaviour
 {
+    // current training step (1-3) that user is in the specific training phase
     private PhaseStep currentTrainingStep;
+    // current training phase that user is in, starting from 3 letter words to 5 letter words
     private TrainingPhase currentTrainingPhase;
 
+    // TODO: delete these?
     private readonly List<PhaseStep> trainingSteps = new();
     private readonly List<TrainingPhase> trainingPhases = new();
 
@@ -55,21 +60,25 @@ public class TrainingManager : MonoBehaviour
             CES.OnNextStep += GetNextStepWord;
             CES.OnNextTrainingPhase += NextTrainingPhase;
             CES.OnTrainingEnd += EndTraining;
+            CES.OnTrainingStart += StartTraining;
         }
     }
 
+    // unsubscribe from all events
     private void OnDestroy()
     {
         if (CES)
         {
             CES.OnStepComplete -= SetNextTrainingStep;
             CES.OnNextStep -= NextTrainingStep;
+            CES.OnNextStep -= GetNextStepWord;
             CES.OnNextTrainingPhase -= NextTrainingPhase;
             CES.OnTrainingEnd -= EndTraining;
+            CES.OnTrainingStart -= StartTraining;
         }   
     }
 
-    //
+    // TODO: delete? 
     private void InitializeTraining()
     {
         trainingPhases.Clear();
@@ -85,6 +94,14 @@ public class TrainingManager : MonoBehaviour
         trainingSteps.Add(PhaseStep.StepOne);
         trainingSteps.Add(PhaseStep.StepTwo);
         trainingSteps.Add(PhaseStep.StepThree);
+    }
+
+    // initializes training when user is ready
+    private void StartTraining()
+    {
+        currentTrainingPhase = TrainingPhase.Warmup;
+        currentTrainingStep = PhaseStep.StepOne;
+        CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
     }
 
     // Sets the next training step depending on the current one
@@ -144,6 +161,11 @@ public class TrainingManager : MonoBehaviour
     private void GetNextStepWord ()
     {
         currWordIndex++;
+        Debug.Log($"***** Getting next word at {currWordIndex} during phase {currentTrainingPhase.ToString()} at step {currentTrainingStep.ToString()} *****");
+        if(currWordIndex == trainingWords.Count)
+        {
+            return;
+        }
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
     }
 

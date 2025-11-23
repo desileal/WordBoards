@@ -13,10 +13,10 @@ public class CentralEventSystem : MonoBehaviour
 
     public event Action<Vector3> OnSetCubeSpawnAnchor;
     public event Action<Vector3> OnSetLedgeSpawnAnchor;
-    public event Action<string> OnPlayerCubePoke;
-    public event Action<Interaction> OnInteractionTypeChange;
-    public event Action<string> OnPlayerCubeReleased;
-    public event Action<string, int> OnPlayerLetterSelection;
+    public event Action<string, int> OnPlayerCubePoke;
+    public event Action<string> OnInteractionTypeChange;
+    public event Action<int> OnLedgeCollision;
+    public event Action<string, int> OnPlayerGrabRelease;
     public event Action OnNextStep;
     public event Action<string> OnSetStepWord;
     public event Action<string> OnNextStepTask;
@@ -41,19 +41,24 @@ public class CentralEventSystem : MonoBehaviour
         OnSetLedgeSpawnAnchor?.Invoke(anchor);
     }
 
-    public void InvokeOnPlayerCubePoke(string s)
+    public void InvokeOnPlayerCubePoke(string s, int i)
     {
-        OnPlayerCubePoke?.Invoke(s);
+        OnPlayerCubePoke?.Invoke(s, i);
     }
 
-    public void InvokeOnInteractionTypeChange(Interaction interaction)
+    public void InvokeOnInteractionTypeChange(string interaction)
     {
         OnInteractionTypeChange?.Invoke(interaction);
     }
 
-    public void InvokeOnPlayerLetterSelection(string s, int i)
+    public void InvokeOnLedgeCollision(int ledgeIndex)
     {
-        OnPlayerLetterSelection?.Invoke(s, i);
+        OnLedgeCollision?.Invoke(ledgeIndex);
+    }
+
+    public void InvokeOnPlayerGrabRelease(string s, int i)
+    {
+        OnPlayerGrabRelease?.Invoke(s, i);
     }
 
     public void InvokeOnNextStep()
@@ -100,6 +105,24 @@ public class CentralEventSystem : MonoBehaviour
     {
         OnTestingEnd?.Invoke();
     }
+
+    #endregion
+
+    #region Awake method
+    /// <summary>
+    /// Singleton protection code (template)
+    /// </summary>
+    private void Awake()
+    {
+        Debug.Log("Awake in CES called.");
+        if (Instance != null)
+        {
+            Destroy(gameObject); return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
 
     #endregion
 }

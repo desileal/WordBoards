@@ -10,6 +10,7 @@ TagManager:
   - InputController
   - Cube
   - PokeInput
+  - Calibration
   layers:
   - Default
   - TransparentFX
