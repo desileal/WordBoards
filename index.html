@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Training Words Editor</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    textarea { width: 100%; height: 250px; }
+    .btn { margin-top: 1rem; padding: 0.5rem 1rem; }
+    pre { background: #f4f4f4; padding: 1rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Training Words Editor</h1>
+  <p>Enter one word per line. Copy the generated JSON into <code>words.json</code> in your GitHub repo.</p>
+
+  <textarea id="wordInput" placeholder="Type words here, one per line"></textarea>
+  <br>
+  <button class="btn" onclick="generateJson()">Generate JSON</button>
+
+  <h2>words.json</h2>
+  <pre id="output"></pre>
+
+  <script>
+    function generateJson() {
+      const text = document.getElementById('wordInput').value;
+      const lines = text
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+      const obj = { words: lines };
+      document.getElementById('output').textContent =
+        JSON.stringify(obj, null, 2);
+    }
+  </script>
+</body>
+</html>
