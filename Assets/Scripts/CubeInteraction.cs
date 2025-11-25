@@ -90,8 +90,6 @@ public class CubeInteraction : MonoBehaviour
 
         float cubeHeight = mainCollider.bounds.size.y;
 
-        Debug.Log($"cubeHeight is {cubeHeight}");
-
         // Adjust the snap position to sit just above the ledge
         Vector3 snapPosition = ledgeTransform.position + new Vector3(0f, cubeHeight / 2f, 0f);
 

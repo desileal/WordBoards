@@ -13,6 +13,7 @@ public class CentralEventSystem : MonoBehaviour
 
     public event Action<Vector3> OnSetCubeSpawnAnchor;
     public event Action<Vector3> OnSetLedgeSpawnAnchor;
+    public event Action<Quaternion> OnSetRotationAnchor;
     public event Action<string, int> OnPlayerCubePoke;
     public event Action<string> OnInteractionTypeChange;
     public event Action<int> OnLedgeCollision;
@@ -39,6 +40,11 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeOnSetLedgeSpawnAnchor(Vector3 anchor)
     {
         OnSetLedgeSpawnAnchor?.Invoke(anchor);
+    }
+
+    public void InvokeOnSetRotationAnchor(Quaternion anchor)
+    {
+        OnSetRotationAnchor?.Invoke(anchor);
     }
 
     public void InvokeOnPlayerCubePoke(string s, int i)

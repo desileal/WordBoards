@@ -153,6 +153,7 @@ public class SessionManager : MonoBehaviour
 
         Vector3 topAnchor = centerHeight + objectSpawnLocation.transform.up * (height / 2f);
         Vector3 bottomAnchor = centerHeight - objectSpawnLocation.transform.up * (height / 2f);
+        Quaternion rotation = objectSpawnLocation.transform.rotation;
         // invoke set spawn locations in StepManager
         
         Debug.Log($"Setting object spawn locations for blocks at {topAnchor} and ledges at {bottomAnchor}");
@@ -164,6 +165,7 @@ public class SessionManager : MonoBehaviour
         
         CES.InvokeOnSetCubeSpawnAnchor(topAnchor);
         CES.InvokeOnSetLedgeSpawnAnchor(bottomAnchor);
+        CES.InvokeOnSetRotationAnchor(rotation);
         CES.InvokeOnTrainingStart(); // TODO: change this later, for testing purposes now
     }
 

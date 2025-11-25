@@ -108,11 +108,16 @@ public class TrainingManager : MonoBehaviour
     // If training is in the final phase (FiveLetters) and final step (StepThree), training is complete
     private void SetNextTrainingStep ()
     {
-        if (currentTrainingPhase == TrainingPhase.FiveLetters && currentTrainingStep == PhaseStep.StepThree)
+        if (currWordIndex == trainingWords.Count - 1)
         {
-            currentTrainingPhase = TrainingPhase.Done;
+            Debug.Log("Training complete");
             CES.InvokeOnTrainingEnd();
         }
+        //if (currentTrainingPhase == TrainingPhase.FiveLetters && currentTrainingStep == PhaseStep.StepThree)
+        //{
+        //    currentTrainingPhase = TrainingPhase.Done;
+        //    CES.InvokeOnTrainingEnd();
+        //}
         else
         {
             CES.InvokeOnNextStep();

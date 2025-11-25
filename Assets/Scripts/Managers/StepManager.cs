@@ -40,12 +40,19 @@ public class StepManager : MonoBehaviour
     private Vector3 interactionBlocksAnchor;
     // position where ledge game objects will spawn from
     private Vector3 ledgesAnchor;
+    // rotation that all the objects will be set to
+    private Quaternion objectsRotation;
+    // distance between each block and ledge
     [SerializeField] private float blockOffset;
 
     // individual game objects for each cube in the scene that has a CubeInteraction script attached
     private List<GameObject> interactionGameObjects = new();
     // individual game objects for each ledge in the scene
     private List<GameObject> ledgeGameObjects = new();
+
+    // How fast users are allowed to poke (seconds between accepted pokes)
+    [SerializeField] private float pokeCooldown = 0.15f;
+    private float _nextAllowedPokeTime = 0f;
 
     CentralEventSystem CES;
 
@@ -63,6 +70,7 @@ public class StepManager : MonoBehaviour
             CES.OnSetStepWord += SetStepParameters;
             CES.OnSetCubeSpawnAnchor += SetInteractionBlocksAnchor;
             CES.OnSetLedgeSpawnAnchor += SetLedgesAnchor;
+            CES.OnSetRotationAnchor += SetObjectRotation;
             CES.OnLedgeCollision += UpdateLastCollidedLedge;
         }
 
@@ -77,6 +85,11 @@ public class StepManager : MonoBehaviour
     private void SetLedgesAnchor(Vector3 anchor)
     {
         ledgesAnchor = anchor;
+    }
+
+    private void SetObjectRotation(Quaternion rotation)
+    {
+        objectsRotation = rotation;
     }
 
     private void SetStepParameters(string stepWord)
@@ -237,18 +250,51 @@ public class StepManager : MonoBehaviour
     /// <param name="i"> listIndex where the interaction block is in interactionGameObjects </param>
     private void CheckPlayerPokeSelection(string letter, int i)
     {
+        // If we somehow get a poke after finishing the word, just ignore it
+        if (_wordLetters == null || _currentLetterIndex >= _wordLetters.Length)
+        {
+            Debug.Log("Received poke but step is already complete. Ignoring.");
+            return;
+        }
+
+        // Global cooldown so one physical poke can't trigger multiple letters
+        if (Time.time < _nextAllowedPokeTime)
+        {
+            Debug.Log("Poke ignored due to cooldown.");
+            return;
+        }
+
         if (letter != _currentCorrectLetter)
         {
             Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_currentCorrectLetter}");
         }
         else
         {
+            // Set cooldown for the next poke
+            _nextAllowedPokeTime = Time.time + pokeCooldown;
+
+            // Safety: make sure indices are valid before indexing into lists
+            if (i < 0 || i >= interactionGameObjects.Count)
+            {
+                Debug.LogError(
+                    $"Poke cube index {i} is out of range. interactionGameObjects.Count = {interactionGameObjects.Count}");
+                return;
+            }
+
+            if (_currentLetterIndex < 0 || _currentLetterIndex >= ledgeGameObjects.Count)
+            {
+                Debug.LogError(
+                    $"_currentLetterIndex {_currentLetterIndex} is out of range. ledgeGameObjects.Count = {ledgeGameObjects.Count}");
+                return;
+            }
+
             Debug.Log($"***** Snapping letter {letter} to ledge at index {i} *****");
             // invoke on snap letter to ledge with ledge transform at current LetterIndex
-            Transform ledgeTransform = ledgeGameObjects.ElementAt(_currentLetterIndex).GetComponent<Transform>();
+            //Transform ledgeTransform = ledgeGameObjects.ElementAt(_currentLetterIndex).GetComponent<Transform>();
+            Transform ledgeTransform = ledgeGameObjects[_currentLetterIndex].transform;
             // TODO - will this be invoked on ALL blocks?
             // OR don't invoke an event but call the method specific to the GrabBlock
-            interactionGameObjects.ElementAt(i).GetComponent<PokeBlock>().SnapToLedge(ledgeTransform);
+            interactionGameObjects[i].GetComponent<PokeBlock>().SnapToLedge(ledgeTransform);
             //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
             UpdateLettersSpelled(letter);
         }
@@ -295,7 +341,11 @@ public class StepManager : MonoBehaviour
     //  Updates the Task with the letters that have been spelled
     private void UpdateLettersSpelled(string s)
     {
-        _lettersSpelled.Append(s);
+        if (_lettersSpelled != null && _currentLetterIndex >= 0 && _currentLetterIndex < _lettersSpelled.Length)
+        {
+            _lettersSpelled[_currentLetterIndex] = s;
+        }
+
         _currentLetterIndex++;
         if (_currentLetterIndex < _lettersSpelled.Length)
         {
