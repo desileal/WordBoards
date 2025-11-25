@@ -1,6 +1,9 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Networking;
 
 // Phases that user progresses through during training, increasing in complexity
 public enum TrainingPhase
@@ -33,6 +36,9 @@ public class TrainingManager : MonoBehaviour
     // current training phase that user is in, starting from 3 letter words to 5 letter words
     private TrainingPhase currentTrainingPhase;
 
+    [SerializeField]
+    private string wordsUrl = "https://desileal.github.io/WordBoards/words.json";
+
     // TODO: delete these?
     private readonly List<PhaseStep> trainingSteps = new();
     private readonly List<TrainingPhase> trainingPhases = new();
@@ -45,10 +51,18 @@ public class TrainingManager : MonoBehaviour
 
     CentralEventSystem CES;
 
+    [Serializable]
+    private class WordListWrapper
+    {
+        public List<string> words;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    IEnumerator Start()
     {
         CES = CentralEventSystem.Instance;
+
+        yield return LoadWordsFromWeb();
 
         InitializeTraining();
         currWordIndex = 0;
@@ -61,6 +75,42 @@ public class TrainingManager : MonoBehaviour
             CES.OnNextTrainingPhase += NextTrainingPhase;
             CES.OnTrainingEnd += EndTraining;
             CES.OnTrainingStart += StartTraining;
+        }
+    }
+
+    private IEnumerator LoadWordsFromWeb()
+    {
+        using (UnityWebRequest www = UnityWebRequest.Get(wordsUrl))
+        {
+            yield return www.SendWebRequest();
+
+#if UNITY_2020_2_OR_NEWER
+            if (www.result != UnityWebRequest.Result.Success)
+#else
+            if (www.isNetworkError || www.isHttpError)
+#endif
+            {
+                Debug.LogError("Error loading words.json: " + www.error);
+                yield break;
+            }
+
+            try
+            {
+                string json = www.downloadHandler.text;
+                var wrapper = JsonUtility.FromJson<WordListWrapper>(json);
+                if (wrapper != null && wrapper.words != null)
+                {
+                    trainingWords = wrapper.words;
+                }
+                else
+                {
+                    Debug.LogError("words.json has wrong format");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Failed to parse words.json: " + e);
+            }
         }
     }
 
@@ -99,6 +149,12 @@ public class TrainingManager : MonoBehaviour
     // initializes training when user is ready
     private void StartTraining()
     {
+        if (trainingWords == null || trainingWords.Count == 0)
+        {
+            Debug.LogError("No training words loaded – cannot start training.");
+            return;
+        }
+
         currentTrainingPhase = TrainingPhase.Warmup;
         currentTrainingStep = PhaseStep.StepOne;
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
@@ -166,9 +222,10 @@ public class TrainingManager : MonoBehaviour
     private void GetNextStepWord ()
     {
         currWordIndex++;
-        Debug.Log($"***** Getting next word at {currWordIndex} during phase {currentTrainingPhase.ToString()} at step {currentTrainingStep.ToString()} *****");
-        if(currWordIndex == trainingWords.Count)
+
+        if(currWordIndex >= trainingWords.Count)
         {
+            Debug.Log("No more training words.");
             return;
         }
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
