@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -147,7 +148,6 @@ public class StepManager : MonoBehaviour
             // spawn game object
             float localXPos = startXPos + (i * blockOffset);
             GameObject ledge = Instantiate(ledgePrefab, new Vector3(localXPos, ledgesAnchor.y, ledgesAnchor.z), Quaternion.identity);
-            Debug.Log($"***** Instantiated ledge prefab with letter {letter}, number {i} at x position {localXPos} *****");
 
             ledge.GetComponent<Ledge>().letterIndex = i;
             // add game objects to list
@@ -173,7 +173,6 @@ public class StepManager : MonoBehaviour
             float localXPos = startXPos + (i * blockOffset);
             // blocks are defined depending on Interaction from SessionManager
             GameObject block = InstantiateInteractiveBlock(letter, localXPos, i);
-            Debug.Log($"***** Instantiated block of letter {letter} at x = {localXPos} *****");
                         
             // add game objects to list
             interactionGameObjects.Add(block);
@@ -214,22 +213,18 @@ public class StepManager : MonoBehaviour
     // add more letters/random blocks through phase progression
     private string[] ShuffleArray()
     {
-        Debug.Log($"_wordLetters length: {_wordLetters.Length}");
         string[] shuffled = new string[_wordLetters.Length];
         for (int i = 0; i < _wordLetters.Length; i++)
         {
             shuffled[i] = _wordLetters[i];
-            Debug.Log($"***** Added {shuffled[i]} to shuffled");
         }
         for (int t = 0; t < shuffled.Length; t++)
         {
             string tmp = shuffled[t];
             int r = Random.Range(t, shuffled.Length);
             shuffled[t] = shuffled[r];
-            //Debug.Log($"Shuffled at index {t} set to {shuffled[t]}");
             shuffled[r] = tmp;
         }
-        //Debug.Log($"***** Shuffled array length is {shuffled.Length} *****");
         return shuffled;
     }
 
