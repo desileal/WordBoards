@@ -239,7 +239,7 @@
 
       <div class="grid-words">
         <div class="words-group">
-          <label for="warmupwords">Three warmup words (including name)</label>
+          <label for="warmupwords">Three warmup words</label>
           <textarea id="warmupwords" placeholder="00000
 12345
 DESIREE"></textarea>
@@ -273,21 +273,9 @@ PRESCIENT
 
     <section class="card">
       <h2>GitHub connection</h2>
-      <p>These settings control where <code>words.json</code> is saved in GitHub.</p>
+      <p>Paste your Personal Access Token to desileal/WordBoards to save your training word sets in <code>words.json</code> in GitHub.</p>
 
       <div class="controls-row">
-        <div>
-          <label for="owner">GitHub Owner</label>
-          <input id="owner" type="text" value="desileal" />
-        </div>
-        <div>
-          <label for="repo">Repository</label>
-          <input id="repo" type="text" value="WordBoards" />
-        </div>
-        <div>
-          <label for="branch">Branch</label>
-          <input id="branch" type="text" value="main" />
-        </div>
         <div>
           <label for="token">GitHub Personal Access Token</label>
           <input id="token" type="password" placeholder="Paste your PAT (not stored)" />
@@ -359,11 +347,15 @@ PRESCIENT
       return btoa(unescape(encodeURIComponent(str)));
     }
 
+    const OWNER = "desileal";
+    const REPO = "WordBoards";
+    const BRANCH = "0.2.0";
+
     async function loadCurrentWords() {
       clearStatus();
-      const owner = document.getElementById("owner").value.trim();
-      const repo = document.getElementById("repo").value.trim();
-      const branch = document.getElementById("branch").value.trim();
+      const owner = OWNER;
+      const repo = REPO;
+      const branch = BRANCH;
       const token = document.getElementById("token").value.trim();
 
       if (!owner || !repo || !branch || !token) {
@@ -419,9 +411,9 @@ PRESCIENT
 
     async function saveWords() {
       clearStatus();
-      const owner = document.getElementById("owner").value.trim();
-      const repo = document.getElementById("repo").value.trim();
-      const branch = document.getElementById("branch").value.trim();
+      const owner = OWNER;
+      const repo = REPO;
+      const branch = BRANCH;
       const token = document.getElementById("token").value.trim();
 
       if (!owner || !repo || !branch || !token) {
