@@ -49,12 +49,20 @@ public class TrainingManager : MonoBehaviour
     [SerializeField] public List<string> testWords = new();
     private int currWordIndex;
 
+    public List<string> warmupWords = new List<string>();
+    public List<string> fourLetterWords = new List<string>();
+    public List<string> fiveLetterWords = new List<string>();
+    public List<string> challengeWords = new List<string>();
+
     CentralEventSystem CES;
 
     [Serializable]
-    private class WordListWrapper
+    private class WordPhaseWrapper
     {
-        public List<string> words;
+        public List<string> warmup;
+        public List<string> fourLetter;
+        public List<string> fiveLetter;
+        public List<string> challenge;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -97,10 +105,13 @@ public class TrainingManager : MonoBehaviour
             try
             {
                 string json = www.downloadHandler.text;
-                var wrapper = JsonUtility.FromJson<WordListWrapper>(json);
-                if (wrapper != null && wrapper.words != null)
+                WordPhaseWrapper wrapper = JsonUtility.FromJson<WordPhaseWrapper>(json);
+                if (wrapper != null)
                 {
-                    trainingWords = wrapper.words;
+                    warmupWords = ConvertToUpper(wrapper.warmup ?? new List<string>());
+                    fourLetterWords = ConvertToUpper(wrapper.fourLetter ?? new List<string>());
+                    fiveLetterWords = ConvertToUpper(wrapper.fiveLetter ?? new List<string>());
+                    challengeWords = ConvertToUpper(wrapper.challenge ?? new List<string>());
                 }
                 else
                 {
@@ -111,7 +122,19 @@ public class TrainingManager : MonoBehaviour
             {
                 Debug.LogError("Failed to parse words.json: " + e);
             }
+            // Merge all into trainingWords
+            trainingWords.Clear();
+            trainingWords.AddRange(warmupWords);
+            trainingWords.AddRange(fourLetterWords);
+            trainingWords.AddRange(fiveLetterWords);
+            trainingWords.AddRange(challengeWords);
         }
+    }
+
+    private List<string> ConvertToUpper(List<string> words)
+    {
+        return words.ConvertAll(x => x.ToUpper());
+        
     }
 
     // unsubscribe from all events
@@ -231,12 +254,7 @@ public class TrainingManager : MonoBehaviour
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
     }
 
-    private void ClearTrainingStep ()
-    {
-        // unsubscribe to events
-
-    }
-
+    // TODO: play music or display a message congratulating user on finishing
     private void EndTraining ()
     {
         
