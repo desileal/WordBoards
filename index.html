@@ -4,142 +4,316 @@
   <meta charset="UTF-8" />
   <title>WordBoards – Training Words Editor</title>
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      line-height: 1.5;
+  :root {
+    --bg: #f5f7fb;
+    --card-bg: #ffffff;
+    --accent: #3b82f6;
+    --accent-soft: rgba(59,130,246,0.1);
+    --border: #d4d7e5;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-main);
+  }
+
+  header {
+    background: linear-gradient(135deg, #1d4ed8, #6366f1);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.3);
+  }
+
+  header .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.7rem;
+  }
+
+  header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #e5e7eb;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1.25rem;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+    padding: 1.5rem 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(148,163,184,0.35);
+  }
+
+  .card h2 {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+  }
+
+  .card p {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 2px rgba(15,23,42,0.05);
+    font-size: 0.85rem;
+    background: #f9fafb;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+    background: #ffffff;
+  }
+
+  .grid-words {
+    display: grid;
+    gap: 1rem;
+  }
+
+  /* Responsive: 1–4 columns depending on width */
+  @media (min-width: 640px) {
+    .grid-words {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    h1 { margin-bottom: 0.5rem; }
-    textarea {
-      width: 100%;
-      height: 250px;
-      font-family: monospace;
-      font-size: 14px;
+  }
+
+  @media (min-width: 900px) {
+    .grid-words {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 1rem;
-      margin-bottom: 0.25rem;
-    }
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 0.4rem;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .row {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-    .row > div {
-      flex: 1 1 200px;
-    }
-    #status {
-      margin-top: 1rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 4px;
-      font-size: 14px;
-      display: none;
-    }
-    #status.error {
-      background: #ffe5e5;
-      color: #a30000;
-    }
-    #status.success {
-      background: #e6ffed;
-      color: #006400;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 0.75rem;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 12px;
-    }
-  </style>
+  }
+
+  .words-group textarea {
+    min-height: 170px;
+  }
+
+  .challenge textarea {
+    min-height: 200px;
+  }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .controls-row > * {
+    flex: 1 1 220px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+
+  button {
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.33);
+    white-space: nowrap;
+  }
+
+  button:hover {
+    filter: brightness(1.05);
+  }
+
+  #status {
+    margin-top: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: none;
+  }
+
+  #status.error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  #status.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  #preview {
+    background: #020617;
+    color: #e5e7eb;
+    border-radius: 12px;
+    padding: 0.9rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+  }
+
+  footer {
+    border-top: 1px solid rgba(148,163,184,0.3);
+    padding: 0.75rem 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: #f9fafb;
+  }
+
+  footer .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
 </head>
 <body>
-  <h1>WordBoards – Training Words Editor</h1>
-  <p>
-    Enter one word per line. Click <strong>Save to GitHub</strong> to overwrite
-    <code>words.json</code> in the <code>desileal/WordBoards</code> repo.
-  </p>
-  <div class="row">
-    <div>
-      <label for="warmupwords">Three warmup words (including name)</label>
-      <textarea id="warmupwords" placeholder="00000
+  <header>
+    <div class="inner">
+      <div>
+        <h1>WordBoards – Training Words Editor</h1>
+        <p>Manage warmup, length-based, and challenge words for Unity training sessions.</p>
+      </div>
+    </div>
+  </header>
+   <main>
+    <section class="card">
+      <h2>Training word sets</h2>
+      <p>Enter one word per line in each box. These will be serialized into <code>words.json</code> and used by your Unity app.</p>
+
+      <div class="grid-words">
+        <div class="words-group">
+          <label for="warmupwords">Three warmup words (including name)</label>
+          <textarea id="warmupwords" placeholder="00000
 12345
 DESIREE"></textarea>
-    </div>
-    <div>
-      <label for="fourletterwords">Five four-letter words</label>
-      <textarea id="fourletterwords" placeholder="BLUE
+        </div>
+
+        <div class="words-group">
+          <label for="fourletterwords">Five four-letter words</label>
+          <textarea id="fourletterwords" placeholder="BLUE
 WIRE
 GRAB
-      ..."></textarea>
-    </div>
-    <div>
-      <label for="fiveletterwords">Five five-letter words</label>
-      <textarea id="fiveletterwords" placeholder="WHALE
+..."></textarea>
+        </div>
+
+        <div class="words-group">
+          <label for="fiveletterwords">Five five-letter words</label>
+          <textarea id="fiveletterwords" placeholder="WHALE
 SHARK
 MOUSE
-      ..."></textarea>
-    </div>
-    <div>
-      <label for="challengewords">Five challenge words</label>
-      <textarea id="challengewords" placeholder="COLLOQUIAL
+..."></textarea>
+        </div>
+
+        <div class="words-group challenge">
+          <label for="challengewords">Five challenge words</label>
+          <textarea id="challengewords" placeholder="COLLOQUIAL
 UBIQUITOUS
 PRESCIENT
-      ..."></textarea>
-    </div>
-  </div>
-  <label for="words">Words (one per line)</label>
-  <textarea id="words" placeholder="Example:
-BUG
-FLY
-SAP
-BIRD
 ..."></textarea>
+        </div>
+      </div>
+    </section>
 
-  <div class="row">
-    <div>
-      <label for="owner">GitHub Owner</label>
-      <input id="owner" type="text" value="desileal" />
+    <section class="card">
+      <h2>GitHub connection</h2>
+      <p>These settings control where <code>words.json</code> is saved in GitHub.</p>
+
+      <div class="controls-row">
+        <div>
+          <label for="owner">GitHub Owner</label>
+          <input id="owner" type="text" value="desileal" />
+        </div>
+        <div>
+          <label for="repo">Repository</label>
+          <input id="repo" type="text" value="WordBoards" />
+        </div>
+        <div>
+          <label for="branch">Branch</label>
+          <input id="branch" type="text" value="main" />
+        </div>
+        <div>
+          <label for="token">GitHub Personal Access Token</label>
+          <input id="token" type="password" placeholder="Paste your PAT (not stored)" />
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button id="loadBtn" type="button">Load current words.json</button>
+        <button id="saveBtn" type="button">Save to GitHub</button>
+      </div>
+
+      <div id="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>words.json preview</h2>
+      <pre id="preview">{}</pre>
+    </section>
+  </main>
+
+  <footer>
+    <div class="inner">
+      <span>WordBoards · Training word editor</span>
+      <span>Updates are written directly to <code>words.json</code> in GitHub.</span>
     </div>
-    <div>
-      <label for="repo">Repository</label>
-      <input id="repo" type="text" value="WordBoards" />
-    </div>
-    <div>
-      <label for="branch">Branch</label>
-      <input id="branch" type="text" value="main" />
-    </div>
-  </div>
-
-  <label for="token">GitHub Personal Access Token (not stored)</label>
-  <input id="token" type="password" placeholder="Paste your fine-grained PAT here" />
-
-  <div class="row">
-    <button id="loadBtn">Load current words.json from GitHub</button>
-    <button id="saveBtn">Save to GitHub</button>
-  </div>
-
-  <div id="status"></div>
-
-  <h2>Preview of words.json</h2>
-  <pre id="preview">{}</pre>
+  </footer>
 
   <script>
     function showStatus(message, isError = false) {
@@ -157,17 +331,28 @@ BIRD
     }
 
     function wordsToJson() {
-      const text = document.getElementById("words").value;
-      const lines = text
-        .split("\n")
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
+      // helper to convert textarea → list of trimmed lines
+      function extract(id) {
+        return document
+          .getElementById(id)
+          .value
+          .split("\n")
+          .map(x => x.trim())
+          .filter(x => x.length > 0);
+      }
 
-      const obj = { words: lines };
+      const obj = {
+        warmup: extract("warmupwords"),
+        fourLetter: extract("fourletterwords"),
+        fiveLetter: extract("fiveletterwords"),
+        challenge: extract("challengewords")
+      };
+
       const json = JSON.stringify(obj, null, 2);
       document.getElementById("preview").textContent = json;
       return json;
     }
+
 
     function base64EncodeUnicode(str) {
       // GitHub API expects base64-encoded content
