@@ -1,9 +1,27 @@
 {
-  "words": [
-    "mandarin",
-    "pencil",
-    "Lorans",
-    "Desiree",
-    "Cabbage"
+  "warmup": [
+    "123456",
+    "Desiree"
+  ],
+  "fourLetter": [
+    "BLUE",
+    "NICE",
+    "TRUE",
+    "GRAB",
+    "TART"
+  ],
+  "fiveLetter": [
+    "whale",
+    "shark",
+    "water",
+    "beach",
+    "dream"
+  ],
+  "challenge": [
+    "colloquial",
+    "ubiquitous",
+    "prescient",
+    "sapiens",
+    "mythical"
   ]
 }
