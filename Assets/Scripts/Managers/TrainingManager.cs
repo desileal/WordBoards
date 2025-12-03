@@ -35,6 +35,8 @@ public class TrainingManager : MonoBehaviour
     private PhaseStep currentTrainingStep;
     // current training phase that user is in, starting from 3 letter words to 5 letter words
     private TrainingPhase currentTrainingPhase;
+    // number of times the user has completed training. They should go through 2 rounds, 1 for each interaction, before testing.
+    private int trainingRounds = 0;
 
     [SerializeField]
     private string wordsUrl = "https://desileal.github.io/WordBoards/words.json";
@@ -177,6 +179,7 @@ public class TrainingManager : MonoBehaviour
             Debug.LogError("No training words loaded – cannot start training.");
             return;
         }
+
 
         currentTrainingPhase = TrainingPhase.Warmup;
         currentTrainingStep = PhaseStep.StepOne;

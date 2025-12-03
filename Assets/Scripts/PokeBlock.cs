@@ -17,7 +17,7 @@ public class PokeBlock : CubeInteraction
         Debug.Log("Poke block detected a collision.");
         if (_isSnapping) return;
 
-
+        
         // Is this a poke source?
         if (IsPokeSource(other))
         {

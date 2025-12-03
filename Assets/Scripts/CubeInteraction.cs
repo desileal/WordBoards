@@ -39,7 +39,7 @@ public class CubeInteraction : MonoBehaviour
     public string[] pokeSourceTags;
 
     [Header("Snap and Return")]
-    public float snapDuration = 0.12f;
+    public float snapDuration = 0.5f;
     public bool snapRotation = true;
     public AnimationCurve snapEase = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public bool returnToStartIfInvalid = true;
@@ -77,7 +77,6 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
-
     // 
     public void SnapToLedge(Transform ledgeTransform)
     {
@@ -97,7 +96,6 @@ public class CubeInteraction : MonoBehaviour
         _moveRoutine = StartCoroutine(MoveTo(snapPosition,
                                              snapRotation ? ledgeTransform.rotation : transform.rotation,
                                              snapDuration));
-
 
     }
 

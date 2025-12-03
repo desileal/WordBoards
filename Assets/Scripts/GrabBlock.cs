@@ -4,6 +4,9 @@ public class GrabBlock : CubeInteraction
 {
 
     private bool ledgeCollision = false;
+    private bool openSpellingLedgeCollision = false;
+    [Header("Open Spelling (optional)")]
+    public OpenSpellingLedge openSpellingLedge;
 
     public GrabBlock(string id, int index) : base(id, index)
     {
@@ -25,6 +28,11 @@ public class GrabBlock : CubeInteraction
         {
             Debug.Log($"Grab block of letter of {targetID} collided with ledge.");
             ledgeCollision = true;
+            return;
+        }
+        if (other.CompareTag("OpenSpellingLedge"))
+        {
+            openSpellingLedgeCollision= true;
         }
     }
 
@@ -35,6 +43,10 @@ public class GrabBlock : CubeInteraction
         {
             Debug.Log("Grab block exited ledge collider.");
             ledgeCollision = false;
+        }
+        if (other.CompareTag("OpenSpellingLedge"))
+        {
+            openSpellingLedgeCollision = false;
         }
     }
 
@@ -62,14 +74,24 @@ public class GrabBlock : CubeInteraction
         {
             CES.InvokeOnPlayerGrabRelease(targetID, listIndex);
         }
-        else
+        else if(openSpellingLedgeCollision)
+        {
+            Debug.Log("(Open) Placing block on open spelling ledge.");
+
+
+            CES?.InvokeOnAdjustLedgeTransformPositions(gameObject.transform);
+            CES?.InvokeOnOpenSpellingLetterSelected(targetID);
+        }
+        else //TODO: destroy game object in open spelling to avoid duplicates in the letter blocks
         {
             Debug.Log($"Returning grab block {targetID} to starting position");
             ReturnToStartPosition();
         }
     }
 
-
+    /// <summary>
+    /// Returns a grab block to its original position before it was grabbed
+    /// </summary>
     public void ReturnToStartPosition()
     {
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);

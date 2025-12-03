@@ -52,7 +52,7 @@ public class StepManager : MonoBehaviour
     private List<GameObject> ledgeGameObjects = new();
 
     // How fast users are allowed to poke (seconds between accepted pokes)
-    [SerializeField] private float pokeCooldown = 0.15f;
+    [SerializeField] private float pokeCooldown = 0.3f;
     private float _nextAllowedPokeTime = 0f;
 
     CentralEventSystem CES;
@@ -101,7 +101,6 @@ public class StepManager : MonoBehaviour
         for(int i = 0; i < _stepWord.Length; i++)
         {
             _wordLetters[i] = stepWord[i].ToString();
-            //Debug.Log($"***** Appended {c} to _wordLetters *****");
         }
         _currentLetterIndex = 0;
         _lettersSpelled = new string[_wordLetters.Length];
@@ -157,8 +156,9 @@ public class StepManager : MonoBehaviour
         }
     }
 
-    // TODO
-    // make shuffled array then spawn interaction blocks from that out of order
+    /// <summary>
+    /// Spawns the interactive blocks that the user spells with
+    /// </summary>
     private void SpawnInteractionBlockObjects()
     {
         // clear list before adding to it
@@ -362,7 +362,6 @@ public class StepManager : MonoBehaviour
             return 0;
 
         float x = (float)(ledgesAnchor.x - (0.5*_wordLetters.Length*blockOffset));
-        Debug.Log($"***** Calculated start x position for {_stepWord} to be {x}");
         return x;
     }
 

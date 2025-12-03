@@ -27,6 +27,9 @@ public class CentralEventSystem : MonoBehaviour
     public event Action OnTrainingEnd;
     public event Action OnTestingStart;
     public event Action OnTestingEnd;
+    public event Action<Transform> OnAdjustLedgeTransformPositions;
+    public event Action OnUpdateLedgeLetterTransforms;
+    public event Action<string> OnOpenSpellingLetterSelected;
 
     #endregion
 
@@ -110,6 +113,21 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeOnTestingEnd()
     {
         OnTestingEnd?.Invoke();
+    }
+
+    public void InvokeOnAdjustLedgeTransformPositions(Transform t)
+    {
+        OnAdjustLedgeTransformPositions?.Invoke(t);
+    }
+
+    public void InvokeOnUpdateLedgeLetterTransforms()
+    {
+        OnUpdateLedgeLetterTransforms?.Invoke();
+    }
+
+    public void InvokeOnOpenSpellingLetterSelected(string s) 
+    {
+        OnOpenSpellingLetterSelected?.Invoke(s);
     }
 
     #endregion
