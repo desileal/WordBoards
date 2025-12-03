@@ -1,28 +1,25 @@
 {
   "warmup": [
-    "00000",
-    "123456",
-    "Desiree"
+    "hello",
+    "12345",
+    "desiree"
   ],
   "fourLetter": [
-    "BLUE",
-    "NICE",
-    "TRUE",
-    "GRAB",
-    "TART"
+    "true",
+    "wire",
+    "grab",
+    "nice"
   ],
   "fiveLetter": [
     "whale",
     "shark",
-    "water",
-    "beach",
-    "dream"
+    "house",
+    "light",
+    "trick"
   ],
   "challenge": [
-    "colloquial",
-    "ubiquitous",
-    "prescient",
+    "challenge",
     "sapiens",
-    "mythical"
+    "mystery"
   ]
 }
