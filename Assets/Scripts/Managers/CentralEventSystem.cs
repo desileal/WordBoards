@@ -22,6 +22,8 @@ public class CentralEventSystem : MonoBehaviour
     public event Action<string> OnSetStepWord;
     public event Action<string> OnNextStepTask;
     public event Action OnStepComplete;
+    public event Action OnWarmupStart;
+    public event Action OnWarmupEnd;
     public event Action OnTrainingStart;
     public event Action OnNextTrainingPhase;
     public event Action OnTrainingEnd;
@@ -85,6 +87,16 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeOnStepComplete()
     {
         OnStepComplete?.Invoke();
+    }
+
+    public void InvokeOnWarmupStart()
+    {
+        OnWarmupStart?.Invoke();
+    }
+
+    public void InvokeOnWarmupEnd()
+    {
+        OnWarmupEnd?.Invoke();
     }
 
     public void InvokeOnTrainingStart()

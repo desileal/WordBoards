@@ -43,13 +43,14 @@ public class TrainingManager : MonoBehaviour
     private readonly List<PhaseStep> trainingSteps = new();
     private readonly List<TrainingPhase> trainingPhases = new();
 
+    [SerializeField] public List<string> warmupWords = new();
     // warmup, three, four and five letter words that users progress through during training
     [SerializeField] public List<string> trainingWords = new List<string>(12);
     // five, six and seven letter words that users spell with all letters
     [SerializeField] public List<string> testWords = new();
     private int currWordIndex;
 
-    public List<string> warmupWords = new List<string>();
+    public List<string> introWords = new List<string>();
     public List<string> fourLetterWords = new List<string>();
     public List<string> fiveLetterWords = new List<string>();
     public List<string> challengeWords = new List<string>();
@@ -77,6 +78,7 @@ public class TrainingManager : MonoBehaviour
 
         if (CES != null)
         {
+            CES.OnWarmupStart += StartWarmup;
             CES.OnStepComplete += SetNextTrainingStep;
             CES.OnNextStep += NextTrainingStep;
             CES.OnNextStep += GetNextStepWord;
@@ -108,7 +110,7 @@ public class TrainingManager : MonoBehaviour
                 WordPhaseWrapper wrapper = JsonUtility.FromJson<WordPhaseWrapper>(json);
                 if (wrapper != null)
                 {
-                    warmupWords = ConvertToUpper(wrapper.warmup ?? new List<string>());
+                    introWords = ConvertToUpper(wrapper.warmup ?? new List<string>());
                     fourLetterWords = ConvertToUpper(wrapper.fourLetter ?? new List<string>());
                     fiveLetterWords = ConvertToUpper(wrapper.fiveLetter ?? new List<string>());
                     challengeWords = ConvertToUpper(wrapper.challenge ?? new List<string>());
@@ -122,9 +124,11 @@ public class TrainingManager : MonoBehaviour
             {
                 Debug.LogError("Failed to parse words.json: " + e);
             }
+            // Merge warmup into warmupWords
+            warmupWords.Clear();
+            warmupWords.AddRange(introWords);
             // Merge all into trainingWords
             trainingWords.Clear();
-            trainingWords.AddRange(warmupWords);
             trainingWords.AddRange(fourLetterWords);
             trainingWords.AddRange(fiveLetterWords);
             trainingWords.AddRange(challengeWords);
@@ -169,6 +173,19 @@ public class TrainingManager : MonoBehaviour
         trainingSteps.Add(PhaseStep.StepThree);
     }
 
+    private void StartWarmup()
+    {
+        if (warmupWords.Count == 0 || warmupWords == null)
+        {
+            Debug.LogError("No warmup words found - cannot start warmup");
+            return;
+        }
+        currWordIndex = 0;
+        currentTrainingPhase = TrainingPhase.Warmup;
+        currentTrainingStep = PhaseStep.StepOne;
+        CES.InvokeSetNextStepWord(warmupWords[currWordIndex]);
+    }
+
     // initializes training when user is ready
     private void StartTraining()
     {
@@ -177,8 +194,8 @@ public class TrainingManager : MonoBehaviour
             Debug.LogError("No training words loaded – cannot start training.");
             return;
         }
-
-        currentTrainingPhase = TrainingPhase.Warmup;
+        currWordIndex = 0;
+        currentTrainingPhase = TrainingPhase.ThreeLetters;
         currentTrainingStep = PhaseStep.StepOne;
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
     }
@@ -187,16 +204,16 @@ public class TrainingManager : MonoBehaviour
     // If training is in the final phase (FiveLetters) and final step (StepThree), training is complete
     private void SetNextTrainingStep ()
     {
+        if(currentTrainingPhase == TrainingPhase.Warmup && currWordIndex >= warmupWords.Count)
+        {
+            CES.InvokeOnTrainingEnd();
+            return;
+        }
         if (currWordIndex == trainingWords.Count - 1)
         {
             Debug.Log("Training complete");
             CES.InvokeOnTrainingEnd();
-        }
-        //if (currentTrainingPhase == TrainingPhase.FiveLetters && currentTrainingStep == PhaseStep.StepThree)
-        //{
-        //    currentTrainingPhase = TrainingPhase.Done;
-        //    CES.InvokeOnTrainingEnd();
-        //}
+        }   
         else
         {
             CES.InvokeOnNextStep();
@@ -241,16 +258,38 @@ public class TrainingManager : MonoBehaviour
         }
     }
 
-
     private void GetNextStepWord ()
     {
         currWordIndex++;
+        /*
+                if(currWordIndex >= trainingWords.Count)
+                {
+                    Debug.Log("No more training words.");
+                    return;
+                }
+        */
+        List<string> sourceList;
 
-        if(currWordIndex >= trainingWords.Count)
+        // Decide which list to use
+        if (currentTrainingPhase == TrainingPhase.Warmup)
         {
-            Debug.Log("No more training words.");
+            sourceList = warmupWords;
+        }
+        else
+        {
+            sourceList = trainingWords;
+        }
+
+        // Check bounds
+        if (currWordIndex >= sourceList.Count)
+        {
+            Debug.Log("No more words in this phase.");
+            CES.InvokeOnTrainingEnd();
             return;
         }
+
+        CES.InvokeSetNextStepWord(sourceList[currWordIndex]);
+
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
     }
 

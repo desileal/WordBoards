@@ -26593,6 +26593,7 @@ MonoBehaviour:
   trainingManager: {fileID: 1118647354}
   testingManager: {fileID: 1113863306}
   currentInteractionType: 0
+  interactionOrder: 0000000001000000
   trainingIsReady: 0
   objectSpawnLocation: {fileID: 1726055038}
 --- !u!114 &1113863306
@@ -26878,6 +26879,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wordsUrl: https://desileal.github.io/WordBoards/words.json
+  warmupWords: []
   trainingWords:
   - 0000
   - 12345
@@ -26904,7 +26906,7 @@ MonoBehaviour:
   - PLANT
   - GRASS
   - WATER
-  warmupWords: []
+  introWords: []
   fourLetterWords: []
   fiveLetterWords: []
   challengeWords: []
