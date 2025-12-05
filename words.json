@@ -1,25 +1,23 @@
 {
   "warmup": [
+    "poke",
     "hello",
-    "12345",
     "desiree"
   ],
   "fourLetter": [
-    "true",
-    "wire",
-    "grab",
-    "nice"
+    "blue",
+    "pink",
+    "grey"
   ],
   "fiveLetter": [
-    "whale",
-    "shark",
-    "house",
-    "light",
-    "trick"
+    "yellow",
+    "green",
+    "purple"
   ],
   "challenge": [
-    "challenge",
-    "sapiens",
-    "mystery"
-  ]
+    "mythical",
+    "obvious",
+    "challenging"
+  ],
+  "startingInteraction": "poke"
 }
