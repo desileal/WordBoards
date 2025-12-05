@@ -28234,6 +28234,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1185400270}
+  - component: {fileID: 1185400271}
   m_Layer: 0
   m_Name: CalibrateSpawnLocations
   m_TagString: Calibration
@@ -28257,6 +28258,22 @@ Transform:
   - {fileID: 1907458282}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1185400271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1185400269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25d5b4bd5442d65438c5159173403a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnPositionReference: {fileID: 0}
+  xOffset: -0.2
+  yOffset: 1
+  zOffset: 0.4
 --- !u!1 &1188303404
 GameObject:
   m_ObjectHideFlags: 0
@@ -32907,7 +32924,7 @@ GameObject:
   - component: {fileID: 1380224901}
   m_Layer: 0
   m_Name: LeftEyeAnchor
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -40246,6 +40263,7 @@ GameObject:
   - component: {fileID: 1726055040}
   - component: {fileID: 1726055043}
   - component: {fileID: 1726055042}
+  - component: {fileID: 1726055044}
   m_Layer: 0
   m_Name: GameObjectSpawnAnchor
   m_TagString: Untagged
@@ -40370,6 +40388,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1726055044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1726055038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25d5b4bd5442d65438c5159173403a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnPositionReference: {fileID: 1087708692}
+  xOffset: 0
+  yOffset: 1
+  zOffset: 0.4
 --- !u!1 &1728096838
 GameObject:
   m_ObjectHideFlags: 0

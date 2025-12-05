@@ -68,6 +68,7 @@ public class SessionManager : MonoBehaviour
     // object that holds current status to be serialized to dashboard
     private SessionStatus sessionStatus;
 
+    // TODO: add this from git site so the order is randomized
     public InteractionType currentInteractionType;
 
     public bool trainingIsReady = false;
