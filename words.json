@@ -9,14 +9,14 @@
     "grey"
   ],
   "fiveLetter": [
-    "yellow",
+    "black",
     "green",
-    "purple"
+    "white"
   ],
   "challenge": [
     "short",
     "test",
     "final"
   ],
-  "startingInteraction": "grab"
+  "startingInteraction": "poke"
 }
