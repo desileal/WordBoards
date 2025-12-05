@@ -1,6 +1,6 @@
 {
   "warmup": [
-    "poke",
+    "grab",
     "hello",
     "desiree"
   ],
@@ -15,9 +15,9 @@
     "purple"
   ],
   "challenge": [
-    "mythical",
-    "obvious",
-    "challenging"
+    "short",
+    "test",
+    "final"
   ],
-  "startingInteraction": "poke"
+  "startingInteraction": "grab"
 }
