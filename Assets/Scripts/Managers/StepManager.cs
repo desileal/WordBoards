@@ -101,11 +101,17 @@ public class StepManager : MonoBehaviour
         for(int i = 0; i < _stepWord.Length; i++)
         {
             _wordLetters[i] = stepWord[i].ToString();
-            //Debug.Log($"***** Appended {c} to _wordLetters *****");
         }
         _currentLetterIndex = 0;
         _lettersSpelled = new string[_wordLetters.Length];
         _currentCorrectLetter = _wordLetters[_currentLetterIndex];
+        StartCoroutine(SpawnObjectsWithDelay());
+    }
+
+    private IEnumerator SpawnObjectsWithDelay()
+    {
+        yield return new WaitForSeconds(1f);
+
         SpawnLedgeObjects();
         SpawnInteractionBlockObjects();
     }
@@ -315,7 +321,7 @@ public class StepManager : MonoBehaviour
         // should be updated before block is released
         else if (_lastCollidedLedge != _currentLetterIndex)
         {
-            Debug.Log($"Grab block for letter, {letter}, placed on wrong ledge.");
+            Debug.Log($"Grab block for letter, {letter}, placed on wrong ledge of index {_lastCollidedLedge}. Currentletterindex = {_currentLetterIndex}");
             Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {cubeListIndex}.");
             // call reset to home with transform from interaction block at _currentLetterIndex
             interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().ReturnToStartPosition();
@@ -349,6 +355,8 @@ public class StepManager : MonoBehaviour
         }
         else
         {
+            DestroyBlockLedges();
+            DestroyInteractionBlocks();
             CES.InvokeOnStepComplete();
         }
     }

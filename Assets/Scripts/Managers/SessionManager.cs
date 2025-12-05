@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Networking;
 
 /// <summary>
 /// Status of the system 
@@ -40,6 +41,15 @@ public class SessionStatus
 
 }
 
+public class SessionConfig
+{
+    public List<string> warmup;
+    public List<string> fourLetter;
+    public List<string> fiveLetter;
+    public List<string> challenge;
+    public string startingInteraction; // "poke" or "grab"
+}
+
 public enum SessionModule
 {
     InTraining,
@@ -62,6 +72,11 @@ public enum InteractionType
 /// </summary>
 public class SessionManager : MonoBehaviour
 {
+    [SerializeField]
+    private string configUrl = "https://desileal.github.io/WordBoards/words.json";
+
+    public SessionConfig currentSessionConfig;
+
     [SerializeField] private TrainingManager trainingManager;
     [SerializeField] private TestingManager testingManager;
 
@@ -71,7 +86,7 @@ public class SessionManager : MonoBehaviour
     // TODO: add this from git site so the order is randomized
     public InteractionType currentInteractionType;
 
-    public bool trainingIsReady = false;
+    private int trainingRunsCompleted = 0;
 
     [SerializeField] public GameObject objectSpawnLocation;
 
@@ -83,41 +98,95 @@ public class SessionManager : MonoBehaviour
     {
         CES = CentralEventSystem.Instance;
 
+        // wait until config file has been loaded from json
+        yield return InitializeSession();
+
         sessionStatus = new SessionStatus();
-        currentInteractionType = InteractionType.None;
+
+        // Make sure config actually loaded
+        if (currentSessionConfig == null)
+        {
+            Debug.LogError("Session config not loaded... cannot proceed with system function.");
+            yield break;
+        }
 
         if (CES == null)
         {
             yield return new WaitUntil(() => CES != null);
         }
-        if (CES != null)
-        {
-            CES.OnNextStepTask += UpdateSessionStatus;
-            //CES.OnInteractionTypeChange += SetSessionInteractionType;
-        }
+        CES.OnNextStepTask += UpdateSessionStatus;
         if (trainingManager == null)
         {
             Debug.LogError("Missing reference to TrainingManager in SessionManager script.");
             yield break;
         }
-        if (trainingManager.trainingWords != null)
-        {
-            trainingIsReady = true;
-            CES.InvokeOnTrainingStart();
-        }
+        
         if (testingManager == null)
         {
             Debug.LogError("Missing reference to TestingManager in SessionManager script.");
             yield break;
         }
-        if (testingManager)
+        trainingManager.InitializeFromConfig(currentSessionConfig);
+        CES.OnTrainingEnd += HandleTrainingEnd;
+    }
+
+    private IEnumerator InitializeSession()
+    {
+        yield return LoadConfigFromWeb();
+
+        if (currentSessionConfig == null)
         {
-            CES.OnTrainingEnd += StartTesting;
+            Debug.LogError("No session config loaded, cannot continue.");
+            yield break;
         }
-        else
+
+        // Set starting interaction once
+        SetSessionInteractionType(currentSessionConfig.startingInteraction);
+
+        trainingRunsCompleted = 0;
+        // Decide which mode to run 
+        // todo later
+        // StartTrainingMode();
+        // or: StartOpenSpellingMode();
+    }
+
+    private IEnumerator LoadConfigFromWeb()
+    {
+        using (UnityWebRequest www = UnityWebRequest.Get(configUrl))
         {
-            
+            yield return www.SendWebRequest();
+
+#if UNITY_2020_2_OR_NEWER
+            if (www.result != UnityWebRequest.Result.Success)
+#else
+            if (www.isNetworkError || www.isHttpError)
+#endif
+            {
+                Debug.LogError("Error loading words.json: " + www.error);
+                yield break;
+            }
+
+            try
+            {
+                string json = www.downloadHandler.text;
+                currentSessionConfig = JsonUtility.FromJson<SessionConfig>(json);
+                if (currentSessionConfig == null)
+                {
+                    Debug.LogError("Failed to parse session config JSON");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Failed to parse words.json: " + e);
+            }
         }
+    }
+
+    private InteractionType SwitchInteraction(InteractionType type)
+    {
+        if (type == InteractionType.Poke) return InteractionType.Grab;
+        if (type == InteractionType.Grab) return InteractionType.Poke;
+        return InteractionType.None;
     }
 
     // event fired every time user makes progress in task or phase
@@ -133,9 +202,13 @@ public class SessionManager : MonoBehaviour
     public void SetSessionInteractionType(string interaction)
     {
         Debug.Log($"Setting session interaction type to {interaction}");
-        if (interaction.Equals("Poke")) currentInteractionType = InteractionType.Poke;
-        else if (interaction.Equals("Grab")) currentInteractionType = InteractionType.Grab;
-        else currentInteractionType = InteractionType.None;
+        if (interaction.Equals("poke")) currentInteractionType = InteractionType.Poke;
+        else if (interaction.Equals("grab")) currentInteractionType = InteractionType.Grab;
+        else
+        {
+            Debug.LogWarning("No interaction type specified in website. Setting to default poke.");
+            currentInteractionType = InteractionType.Poke;
+        }
     }
 
     // get x, y, z locations of top and bottom of the quad
@@ -167,18 +240,34 @@ public class SessionManager : MonoBehaviour
         CES.InvokeOnSetCubeSpawnAnchor(topAnchor);
         CES.InvokeOnSetLedgeSpawnAnchor(bottomAnchor);
         CES.InvokeOnSetRotationAnchor(rotation);
-        CES.InvokeOnTrainingStart(); // TODO: change this later, for testing purposes now
-    }
-
-    private void StartWarmup ()
-    {
-
+        StartTraining(); // TODO: change this later, for testing purposes now
     }
 
     // Invoked after the spawning locations have been calibrated
     public void StartTraining()
     {
-        CES?.InvokeOnTrainingStart();
+        CES.InvokeOnTrainingStart(currentInteractionType.ToString());
+    }
+
+    private void HandleTrainingEnd()
+    {
+        trainingRunsCompleted++;
+        Debug.Log($"Training run {trainingRunsCompleted} finished with interaction {currentInteractionType}");
+
+        if (trainingRunsCompleted == 1)
+        {
+            // First run is done - switch to the other interaction and run training again
+            currentInteractionType = SwitchInteraction(currentInteractionType);
+            Debug.Log($"Starting second training run with interaction {currentInteractionType}");
+
+            StartTraining();  // whatever you already use to kick off training
+        }
+        else
+        {
+            // Both interaction modes are done - go to testing or open spelling
+            Debug.Log("Both training runs complete. Starting testing (or next phase).");
+            StartTesting();   // or whatever your next phase is
+        }
     }
 
     // Starts testing phase through Testing Manager

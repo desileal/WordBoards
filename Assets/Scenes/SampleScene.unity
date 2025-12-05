@@ -1578,7 +1578,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &37149341
 Transform:
   m_ObjectHideFlags: 0
@@ -16645,8 +16645,8 @@ MonoBehaviour:
   pokeBlockPrefab: {fileID: 3604018115514701676, guid: 43f256e458c692f4798f972c816f5deb, type: 3}
   grabBlockPrefab: {fileID: 1705450317253936938, guid: 014a0e25f44398b488a8207d3c975107, type: 3}
   ledgePrefab: {fileID: 5843134089458350414, guid: 688366503eca159418b89cfe11a34e2d, type: 3}
-  blockOffset: 0.2
-  pokeCooldown: 0.15
+  blockOffset: 0.18
+  pokeCooldown: 0.5
 --- !u!1 &674260036
 GameObject:
   m_ObjectHideFlags: 0
@@ -26590,10 +26590,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e4534b6ea69ef347a773658a932e85d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  configUrl: https://desileal.github.io/WordBoards/words.json
   trainingManager: {fileID: 1118647354}
   testingManager: {fileID: 1113863306}
   currentInteractionType: 0
-  trainingIsReady: 0
   objectSpawnLocation: {fileID: 1726055038}
 --- !u!114 &1113863306
 MonoBehaviour:
@@ -26845,7 +26845,7 @@ GameObject:
   - component: {fileID: 1118647354}
   m_Layer: 0
   m_Name: TrainingManager
-  m_TagString: Untagged
+  m_TagString: TrainingManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26877,7 +26877,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d824a50feaec94bb9950ba04a596e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wordsUrl: https://desileal.github.io/WordBoards/words.json
   trainingWords:
   - 0000
   - 12345
@@ -28270,7 +28269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25d5b4bd5442d65438c5159173403a06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnPositionReference: {fileID: 0}
+  spawnPositionReference: {fileID: 1087708692}
   xOffset: -0.2
   yOffset: 1
   zOffset: 0.4
@@ -28385,7 +28384,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1190519557
 Transform:
   m_ObjectHideFlags: 0

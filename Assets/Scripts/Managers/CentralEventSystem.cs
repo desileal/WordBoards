@@ -11,6 +11,7 @@ public class CentralEventSystem : MonoBehaviour
 
     #region Event Declaration
 
+    public event Action<SessionConfig> OnSetSessionConfig;
     public event Action<Vector3> OnSetCubeSpawnAnchor;
     public event Action<Vector3> OnSetLedgeSpawnAnchor;
     public event Action<Quaternion> OnSetRotationAnchor;
@@ -22,7 +23,7 @@ public class CentralEventSystem : MonoBehaviour
     public event Action<string> OnSetStepWord;
     public event Action<string> OnNextStepTask;
     public event Action OnStepComplete;
-    public event Action OnTrainingStart;
+    public event Action<string> OnTrainingStart;
     public event Action OnNextTrainingPhase;
     public event Action OnTrainingEnd;
     public event Action OnTestingStart;
@@ -31,6 +32,11 @@ public class CentralEventSystem : MonoBehaviour
     #endregion
 
     #region Event wrappers for external use
+
+    public void InvokeOnSetSessionConfig(SessionConfig config)
+    {
+        OnSetSessionConfig?.Invoke(config);
+    }
 
     public void InvokeOnSetCubeSpawnAnchor(Vector3 anchor)
     {
@@ -87,9 +93,9 @@ public class CentralEventSystem : MonoBehaviour
         OnStepComplete?.Invoke();
     }
 
-    public void InvokeOnTrainingStart()
+    public void InvokeOnTrainingStart(string s)
     {
-        OnTrainingStart?.Invoke();
+        OnTrainingStart?.Invoke(s);
     }
 
     public void InvokeOnNextTrainingPhase ()
