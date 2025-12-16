@@ -1,22 +1,19 @@
 {
   "warmup": [
     "hello",
-    "desiree"
+    "david"
   ],
   "fourLetter": [
     "blue",
-    "pink",
-    "grey"
+    "pink"
   ],
   "fiveLetter": [
-    "black",
     "green",
-    "white"
+    "black"
   ],
   "challenge": [
-    "random",
-    "quick",
-    "last one"
+    "space",
+    "engineers"
   ],
   "startingInteraction": "poke"
 }
