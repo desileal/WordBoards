@@ -6,6 +6,12 @@ TagManager:
   tags:
   - Letterboard
   - GameManager
+  - Ledge
+  - InputController
+  - Cube
+  - PokeInput
+  - Calibration
+  - TrainingManager
   layers:
   - Default
   - TransparentFX

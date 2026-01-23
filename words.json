@@ -1,9 +1,19 @@
 {
-  "words": [
-    "mandarin",
-    "pencil",
-    "Lorans",
-    "Desiree",
-    "Cabbage"
-  ]
+  "warmup": [
+    "hello",
+    "desiree"
+  ],
+  "fourLetter": [
+    "blue",
+    "pink"
+  ],
+  "fiveLetter": [
+    "green",
+    "black"
+  ],
+  "challenge": [
+    "space",
+    "engineers"
+  ],
+  "startingInteraction": "poke"
 }

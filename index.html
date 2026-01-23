@@ -1,38 +1,523 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Training Words Editor</title>
+  <meta charset="UTF-8" />
+  <title>WordBoards – Training Words Editor</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    textarea { width: 100%; height: 250px; }
-    .btn { margin-top: 1rem; padding: 0.5rem 1rem; }
-    pre { background: #f4f4f4; padding: 1rem; white-space: pre-wrap; }
-  </style>
+  :root {
+    --bg: #f5f7fb;
+    --card-bg: #ffffff;
+    --accent: #3b82f6;
+    --accent-soft: rgba(59,130,246,0.1);
+    --border: #d4d7e5;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-main);
+  }
+
+  header {
+    background: linear-gradient(135deg, #1d4ed8, #6366f1);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.3);
+  }
+
+  header .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.7rem;
+  }
+
+  header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #e5e7eb;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1.25rem;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+    padding: 1.5rem 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(148,163,184,0.35);
+  }
+
+  .card h2 {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+  }
+
+  .card p {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 2px rgba(15,23,42,0.05);
+    font-size: 0.85rem;
+    background: #f9fafb;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+    background: #ffffff;
+  }
+
+  .grid-words {
+    display: grid;
+    gap: 1rem;
+  }
+
+  /* Responsive: 1–4 columns depending on width */
+  @media (min-width: 640px) {
+    .grid-words {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 900px) {
+    .grid-words {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .words-group textarea {
+    min-height: 170px;
+  }
+
+  .challenge textarea {
+    min-height: 200px;
+  }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .controls-row > * {
+    flex: 1 1 220px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+
+  button {
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.33);
+    white-space: nowrap;
+  }
+
+  button:hover {
+    filter: brightness(1.05);
+  }
+
+  #status {
+    margin-top: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: none;
+  }
+
+  #status.error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  #status.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  #preview {
+    background: #020617;
+    color: #e5e7eb;
+    border-radius: 12px;
+    padding: 0.9rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+  }
+
+  footer {
+    border-top: 1px solid rgba(148,163,184,0.3);
+    padding: 0.75rem 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: #f9fafb;
+  }
+
+  footer .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
 </head>
 <body>
-  <h1>Training Words Editor</h1>
-  <p>Enter one word per line. Copy the generated JSON into <code>words.json</code> in your GitHub repo.</p>
+  <header>
+    <div class="inner">
+      <div>
+        <h1>WordBoards – Training Words Editor</h1>
+        <p>Manage warmup, length-based, and challenge words for Unity training sessions.</p>
+      </div>
+    </div>
+  </header>
+   <main>
+    <section class="card">
+      <h2>Training word sets</h2>
+      <p>Enter one word per line in each box. These will be serialized into <code>words.json</code> and used by your Unity app.</p>
 
-  <textarea id="wordInput" placeholder="Type words here, one per line"></textarea>
-  <br>
-  <button class="btn" onclick="generateJson()">Generate JSON</button>
+      <div class="grid-words">
+        <div class="words-group">
+          <label for="warmupwords">Three warmup words</label>
+          <textarea id="warmupwords" placeholder="00000
+12345
+DESIREE"></textarea>
+        </div>
 
-  <h2>words.json</h2>
-  <pre id="output"></pre>
+        <div class="words-group">
+          <label for="fourletterwords">Five four-letter words</label>
+          <textarea id="fourletterwords" placeholder="BLUE
+WIRE
+GRAB
+..."></textarea>
+        </div>
+
+        <div class="words-group">
+          <label for="fiveletterwords">Five five-letter words</label>
+          <textarea id="fiveletterwords" placeholder="WHALE
+SHARK
+MOUSE
+..."></textarea>
+        </div>
+
+        <div class="words-group challenge">
+          <label for="challengewords">Five challenge words</label>
+          <textarea id="challengewords" placeholder="COLLOQUIAL
+UBIQUITOUS
+PRESCIENT
+..."></textarea>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <label for="startingInteraction">Starting interaction</label>
+          <select id="startingInteraction">
+            <option value="poke">Poke</option>
+            <option value="grab">Grab</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>GitHub connection</h2>
+      <p>Paste your Personal Access Token to desileal/WordBoards to save your training word sets in <code>words.json</code> in GitHub.</p>
+
+      <div class="controls-row">
+        <div>
+          <label for="token">GitHub Personal Access Token</label>
+          <input id="token" type="password" placeholder="Paste your PAT (not stored)" />
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button id="loadBtn" type="button">Load current words.json</button>
+        <button id="saveBtn" type="button">Save to GitHub</button>
+      </div>
+
+      <div id="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>words.json preview</h2>
+      <pre id="preview">{}</pre>
+    </section>
+  </main>
+
+  <footer>
+    <div class="inner">
+      <span>WordBoards · Training word editor</span>
+      <span>Updates are written directly to <code>words.json</code> in GitHub.</span>
+    </div>
+  </footer>
 
   <script>
-    function generateJson() {
-      const text = document.getElementById('wordInput').value;
-      const lines = text
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
-
-      const obj = { words: lines };
-      document.getElementById('output').textContent =
-        JSON.stringify(obj, null, 2);
+    function showStatus(message, isError = false) {
+      const status = document.getElementById("status");
+      status.textContent = message;
+      status.className = isError ? "error" : "success";
+      status.style.display = "block";
     }
+
+    function clearStatus() {
+      const status = document.getElementById("status");
+      status.style.display = "none";
+      status.textContent = "";
+      status.className = "";
+    }
+
+    function wordsToJson() {
+      // helper to convert textarea → list of trimmed lines
+      function extract(id) {
+        return document
+          .getElementById(id)
+          .value
+          .split("\n")
+          .map(x => x.trim())
+          .filter(x => x.length > 0);
+      }
+
+      const startingInteraction =
+    (document.getElementById("startingInteraction").value || "poke").toLowerCase();
+
+      const obj = {
+        warmup: extract("warmupwords"),
+        fourLetter: extract("fourletterwords"),
+        fiveLetter: extract("fiveletterwords"),
+        challenge: extract("challengewords"),
+        startingInteraction: startingInteraction 
+      };
+
+      const json = JSON.stringify(obj, null, 2);
+      document.getElementById("preview").textContent = json;
+      return json;
+    }
+
+
+    function base64EncodeUnicode(str) {
+      // GitHub API expects base64-encoded content
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    const OWNER = "desileal";
+    const REPO = "WordBoards";
+    const BRANCH = "0.2.3";
+
+    async function loadCurrentWords() {
+      clearStatus();
+      const owner = OWNER;
+      const repo = REPO;
+      const branch = BRANCH;
+      const token = document.getElementById("token").value.trim();
+
+      if (!owner || !repo || !branch || !token) {
+        showStatus("Owner, repo, branch, and token are required.", true);
+        return;
+      }
+
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/words.json?ref=${encodeURIComponent(branch)}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json",
+          },
+        });
+
+        if (res.status === 404) {
+          showStatus("words.json not found on this branch. It will be created when you save.");
+          return;
+        }
+
+        if (!res.ok) {
+          const txt = await res.text();
+          showStatus(`Failed to load words.json: ${res.status} ${txt}`, true);
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.content) {
+          showStatus("words.json has no content field.", true);
+          return;
+        }
+
+        const decoded = decodeURIComponent(escape(atob(data.content)));
+        document.getElementById("preview").textContent = decoded;
+
+        // Try to parse to put back in textarea as lines
+        try {
+          const parsed = JSON.parse(decoded);
+          if (parsed.warmup) {
+              document.getElementById("warmupwords").value = parsed.warmup.join("\n");
+            }
+            if (parsed.fourLetter) {
+              document.getElementById("fourletterwords").value = parsed.fourLetter.join("\n");
+            }
+            if (parsed.fiveLetter) {
+              document.getElementById("fiveletterwords").value = parsed.fiveLetter.join("\n");
+            }
+            if (parsed.challenge) {
+              document.getElementById("challengewords").value = parsed.challenge.join("\n");
+            }
+            if (parsed.startingInteraction) {
+              document.getElementById("startingInteraction").value =
+                parsed.startingInteraction.toLowerCase();
+            }
+        } catch (e) {
+          // If parse fails, just leave preview as raw JSON
+        }
+
+        showStatus("Loaded words.json from GitHub.");
+      } catch (e) {
+        showStatus("Error loading words.json: " + e.message, true);
+      }
+    }
+
+    async function saveWords() {
+      clearStatus();
+      const owner = OWNER;
+      const repo = REPO;
+      const branch = BRANCH;
+      const token = document.getElementById("token").value.trim();
+
+      if (!owner || !repo || !branch || !token) {
+        showStatus("Owner, repo, branch, and token are required.", true);
+        return;
+      }
+
+      const json = wordsToJson();
+      const contentB64 = base64EncodeUnicode(json);
+      const path = "words.json";
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+
+      let currentSha = null;
+
+      // First, try to get existing file to obtain its SHA
+      try {
+        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json",
+          },
+        });
+
+        if (getRes.ok) {
+          const existing = await getRes.json();
+          currentSha = existing.sha;
+        } else if (getRes.status !== 404) {
+          const txt = await getRes.text();
+          showStatus(`Error checking existing words.json: ${getRes.status} ${txt}`, true);
+          return;
+        }
+      } catch (e) {
+        showStatus("Error checking existing words.json: " + e.message, true);
+        return;
+      }
+
+      const payload = {
+        message: "Update words.json via WordBoards editor",
+        content: contentB64,
+        branch: branch,
+      };
+
+      if (currentSha) {
+        payload.sha = currentSha;
+      }
+
+      try {
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!putRes.ok) {
+          const txt = await putRes.text();
+          showStatus(`Failed to save words.json: ${putRes.status} ${txt}`, true);
+          return;
+        }
+
+        showStatus("Successfully saved words.json to GitHub.");
+      } catch (e) {
+        showStatus("Error saving words.json: " + e.message, true);
+      }
+    }
+
+    document.getElementById("loadBtn").addEventListener("click", loadCurrentWords);
+    document.getElementById("saveBtn").addEventListener("click", saveWords);
+
+    // Keep preview in sync as user types
+    document.getElementById("words").addEventListener("input", () => {
+      try {
+        wordsToJson();
+      } catch {
+        // ignore
+      }
+    });
   </script>
 </body>
 </html>

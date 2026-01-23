@@ -11,7 +11,7 @@ public class LetterboardManager : MonoBehaviour
     // private string currentInput = "";
 
     private GameObject gameManagerObject;
-    private GameManager gameManager;
+    private SessionManager gameManager;
 
     private AudioManager audioManager;
     private AudioSource audioSource;
@@ -23,7 +23,7 @@ public class LetterboardManager : MonoBehaviour
     public void Awake()
     {
         gameManagerObject = GameObject.FindGameObjectWithTag("GameManager");
-        gameManager = gameManagerObject.GetComponent<GameManager>();
+        gameManager = gameManagerObject.GetComponent<SessionManager>();
         audioManager = gameManagerObject.GetComponent<AudioManager>();
     }
 
@@ -51,12 +51,12 @@ public class LetterboardManager : MonoBehaviour
                 break;
         }
 
-        // Get the relevant clip and play it.
-        //AudioClip clip = AudioManager.Instance.GetClip(text);
-        //if (clip != null)
-        //{
-        //    audioSource.PlayOneShot(clip);
-        //}
+         // Get the relevant clip and play it.
+        AudioClip clip = AudioManager.Instance.GetClip(text);
+        if (clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 
     public void AppendCharacter(string key)
