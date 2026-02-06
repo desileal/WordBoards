@@ -355,10 +355,18 @@ public class StepManager : MonoBehaviour
         }
         else
         {
-            DestroyBlockLedges();
-            DestroyInteractionBlocks();
-            CES.InvokeOnStepComplete();
+            StartCoroutine(HandleWordComplete());
+            
         }
+    }
+
+    private IEnumerator HandleWordComplete()
+    {
+        yield return new WaitForSeconds(3f);
+
+        DestroyBlockLedges();
+        DestroyInteractionBlocks();
+        CES.InvokeOnStepComplete();
     }
 
     // Calculates the starting x position of each interactive block and ledge 
