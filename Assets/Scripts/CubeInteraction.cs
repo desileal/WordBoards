@@ -1,12 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using NUnit.Framework;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 /// <summary>
 /// InteractionModality defines the user's input mode that they use to interact with objects and Interactions
@@ -79,7 +74,7 @@ public class CubeInteraction : MonoBehaviour
 
 
     // 
-    public void SnapToLedge(Transform ledgeTransform)
+    public void SnapToLedge(Transform ledgeTransform, System.Action onComplete = null)
     {
 
         if (ledgeTransform == null)
@@ -94,13 +89,18 @@ public class CubeInteraction : MonoBehaviour
         Vector3 snapPosition = ledgeTransform.position + new Vector3(0f, cubeHeight / 2f, 0f);
 
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-        _moveRoutine = StartCoroutine(MoveTo(snapPosition,
+        _moveRoutine = StartCoroutine(MoveToThenCallback(snapPosition,
                                              snapRotation ? ledgeTransform.rotation : transform.rotation,
-                                             snapDuration));
+                                             snapDuration, onComplete));
 
 
     }
 
+    private IEnumerator MoveToThenCallback(Vector3 pos, Quaternion rot, float duration, System.Action onComplete)
+    {
+        yield return MoveTo(pos, rot, duration); // your existing move logic
+        onComplete?.Invoke();
+    }
 
     public IEnumerator MoveTo(Vector3 pos, Quaternion rot, float duration)
     {

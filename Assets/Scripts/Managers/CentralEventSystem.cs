@@ -18,6 +18,7 @@ public class CentralEventSystem : MonoBehaviour
     public event Action<string, int> OnPlayerCubePoke;
     public event Action<string> OnInteractionTypeChange;
     public event Action<int> OnLedgeCollision;
+    public event Action<int> OnBlockRemovedFromLedge;
     public event Action<string, int> OnPlayerGrabRelease;
     public event Action OnNextStep;
     public event Action<string> OnSetStepWord;
@@ -66,6 +67,11 @@ public class CentralEventSystem : MonoBehaviour
     public void InvokeOnLedgeCollision(int ledgeIndex)
     {
         OnLedgeCollision?.Invoke(ledgeIndex);
+    }
+
+    public void InvokeOnBlockRemovedFromLedge(int ledgeIndex)
+    {
+        OnBlockRemovedFromLedge?.Invoke(ledgeIndex);
     }
 
     public void InvokeOnPlayerGrabRelease(string s, int i)
