@@ -1,7 +1,6 @@
 {
   "warmup": [
-    "hello",
-    "warmup"
+    "hello"
   ],
   "fourLetter": [
     "blue",
