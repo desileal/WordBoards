@@ -1,6 +1,7 @@
 {
   "warmup": [
-    "hello"
+    "hello",
+    "red"
   ],
   "fourLetter": [
     "blue",
@@ -12,7 +13,7 @@
   ],
   "challenge": [
     "summer",
-    "spelling"
+    "ocean"
   ],
   "startingInteraction": "grab"
 }
