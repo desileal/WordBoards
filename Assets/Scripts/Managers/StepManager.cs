@@ -299,7 +299,7 @@ public class StepManager : MonoBehaviour
             // OR don't invoke an event but call the method specific to the GrabBlock
             interactionGameObjects[i].GetComponent<PokeBlock>().SnapToLedge(ledgeTransform);
             //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
-            UpdateLettersSpelled(letter);
+            UpdateLettersSpelledPoke(letter);
         }
     }
 
@@ -346,37 +346,25 @@ public class StepManager : MonoBehaviour
                 Debug.Log($"[SNAP COMPLETE CALLBACK] Still has empty slots");
             }
         });
-        /**
-        if (letter != _currentCorrectLetter)
+    }
+
+    // For poke - sequential only
+    private void UpdateLettersSpelledPoke(string letter)
+    {
+        if (_lettersSpelled != null && _currentLetterIndex >= 0 && _currentLetterIndex < _lettersSpelled.Length)
+            _lettersSpelled[_currentLetterIndex] = letter;
+
+        _currentLetterIndex++;
+
+        if (_currentLetterIndex < _lettersSpelled.Length)
         {
-            Debug.Log($"Incorrect letter, {letter}, selected for next letter, {_currentCorrectLetter}");
-            Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {cubeListIndex}.");
-            // call reset to home with transform from interaction block at _currentLetterIndex
-            interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().ReturnToStartPosition();
-        }
-        // TODO - is there a way to yield of the ledge index has not been updated yet?
-        // should be updated before block is released
-        else if (_lastCollidedLedge != _currentLetterIndex)
-        {
-            Debug.Log($"Grab block for letter, {letter}, placed on wrong ledge of index {_lastCollidedLedge}. Currentletterindex = {_currentLetterIndex}");
-            Debug.Log($"Calling ReturnToStartPosition for GrabBlock of letter {letter} at index {cubeListIndex}.");
-            // call reset to home with transform from interaction block at _currentLetterIndex
-            interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().ReturnToStartPosition();
+            _currentCorrectLetter = _wordLetters[_currentLetterIndex];
+            CES.InvokeOnNextStepTask(_currentCorrectLetter);
         }
         else
         {
-            Debug.Log($"***** Snapping letter {letter} to ledge at index {cubeListIndex} *****");
-            // invoke on snap letter to ledge with ledge transform at current LetterIndex
-            Transform ledgeTransform = ledgeGameObjects.ElementAt(_lastCollidedLedge).GetComponent<Transform>();
-            // TODO - will this be invoked on ALL blocks?
-            // OR don't invoke an event but call the method specific to the GrabBlock
-            //interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>().SnapToLedge(ledgeTransform);
-            //CES.InvokeOnSnapBlockToLedge(ledgeTransform);
-            GrabBlock grab = interactionGameObjects.ElementAt(cubeListIndex).GetComponent<GrabBlock>();
-            grab.SnapToLedge(ledgeTransform);
-            grab.SetSnappedLedgeIndex(_lastCollidedLedge);
-            UpdateLettersSpelled(letter);
-        **/
+            StartCoroutine(HandleWordComplete());
+        }
     }
 
     //  Updates the Task with the letters that have been spelled
@@ -392,23 +380,7 @@ public class StepManager : MonoBehaviour
             StartCoroutine(HandleWordComplete());
         else
             RecalculateCurrentLetterIndex();
-        /**
-        if (_lettersSpelled != null && _currentLetterIndex >= 0 && _currentLetterIndex < _lettersSpelled.Length)
-        {
-            _lettersSpelled[_currentLetterIndex] = s;
-        }
-
-        _currentLetterIndex++;
-        if (_currentLetterIndex < _lettersSpelled.Length)
-        {
-            _currentCorrectLetter = _wordLetters[_currentLetterIndex];
-            CES.InvokeOnNextStepTask(_currentCorrectLetter); // this invokes a function in session manager to send updated session status
-        }
-        else
-        {
-            StartCoroutine(HandleWordComplete());
-        }
-        **/
+        
     }
 
     private void RecalculateCurrentLetterIndex()
@@ -423,12 +395,12 @@ public class StepManager : MonoBehaviour
 
     private void HandleBlockRemovedFromLedge(int ledgeIndex)
     {
-        //if (_ledgeFilled == null || ledgeIndex < 0 || ledgeIndex >= _ledgeFilled.Length) return;
 
         Debug.Log($"Block removed from ledge {ledgeIndex}, reopening that slot.");
+        Ledge ledge = ledgeGameObjects[ledgeIndex].GetComponent<Ledge>();
+        ledge.snapped = false;
         _ledgeFilled[ledgeIndex] = false;
         _lettersSpelled[ledgeIndex] = null;
-        //RecalculateCurrentLetterIndex();
     }
 
     private IEnumerator HandleWordComplete()
