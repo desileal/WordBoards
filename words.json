@@ -1,19 +1,17 @@
 {
   "warmup": [
     "hello",
-    "red"
+    "keats"
   ],
   "fourLetter": [
-    "blue",
-    "pink"
+    "shelley",
+    "yeats"
   ],
   "fiveLetter": [
-    "green",
-    "orange"
+    "austen"
   ],
   "challenge": [
-    "summer",
-    "ocean"
+    "bronte"
   ],
   "startingInteraction": "poke"
 }
