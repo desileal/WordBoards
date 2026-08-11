@@ -1,19 +1,17 @@
 {
   "warmup": [
-    "00000",
-    "grab",
-    "hello"
+    "hello",
+    "keats"
   ],
   "fourLetter": [
-    "true",
-    "nice",
-    "hehe",
-    "blob"
+    "shelley",
+    "yeats"
   ],
   "fiveLetter": [
-    "write",
-    "quiet",
-    "sleep"
+    "austen"
   ],
-  "challenge": []
+  "challenge": [
+    "bronte"
+  ],
+  "startingInteraction": "poke"
 }

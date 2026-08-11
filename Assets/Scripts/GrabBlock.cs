@@ -4,6 +4,7 @@ public class GrabBlock : CubeInteraction
 {
 
     private bool ledgeCollision = false;
+    private int _snappedLedgeIndex = -1;
 
     public GrabBlock(string id, int index) : base(id, index)
     {
@@ -38,11 +39,26 @@ public class GrabBlock : CubeInteraction
         }
     }
 
-    // referenced from Unity GrabInteraction game object
+    public void SetSnappedLedgeIndex(int ledgeIndex)
+    {
+        _snappedLedgeIndex = ledgeIndex;
+    }
+
+    public void ResetSnappedLedgeIndex()
+    {
+        _snappedLedgeIndex = -1;
+    }
+
     public void OnGrabSelected()
     {
         Debug.Log($"Grabbed block of letter {targetID}.");
         _isHeld = true;
+
+        if (_snappedLedgeIndex != -1)
+        {
+            CES.InvokeOnBlockRemovedFromLedge(_snappedLedgeIndex);
+            _snappedLedgeIndex = -1;
+        }
     }
 
     /// <summary>
@@ -55,15 +71,21 @@ public class GrabBlock : CubeInteraction
         // check to see where cube location is - if it triggered collision with the proper slot
 
         _isHeld = false;
-        if (_isSnapping) return;
+        if (_isSnapping)
+        {
+            Debug.LogWarning($"[GRAB RELEASED] Aborting because _isSnapping=true!");
+            return;
+        }
 
         // var cubeBounds = ComputeWorldBounds();
         if (ledgeCollision) // previously checked targetLedge.IsInsideBoundary(cubeBounds)
         {
+            Debug.Log($"[GRAB RELEASED] Invoking OnPlayerGrabRelease");
             CES.InvokeOnPlayerGrabRelease(targetID, listIndex);
         }
         else
         {
+            Debug.Log($"[GRAB RELEASED] No ledge collision, returning to start");
             Debug.Log($"Returning grab block {targetID} to starting position");
             ReturnToStartPosition();
         }

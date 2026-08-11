@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -36,15 +37,12 @@ public class TrainingManager : MonoBehaviour
     // current training phase that user is in, starting from 3 letter words to 5 letter words
     private TrainingPhase currentTrainingPhase;
 
-    [SerializeField]
-    private string wordsUrl = "https://desileal.github.io/WordBoards/words.json";
-
     // TODO: delete these?
     private readonly List<PhaseStep> trainingSteps = new();
     private readonly List<TrainingPhase> trainingPhases = new();
 
     // warmup, three, four and five letter words that users progress through during training
-    [SerializeField] public List<string> trainingWords = new List<string>(12);
+    [SerializeField] public List<string> trainingWords = new List<string>();
     // five, six and seven letter words that users spell with all letters
     [SerializeField] public List<string> testWords = new();
     private int currWordIndex;
@@ -66,75 +64,52 @@ public class TrainingManager : MonoBehaviour
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    IEnumerator Start()
+    public void Start()
     {
         CES = CentralEventSystem.Instance;
 
-        yield return LoadWordsFromWeb();
+        //yield return LoadWordsFromWeb();
 
         InitializeTraining();
         currWordIndex = 0;
 
         if (CES != null)
         {
+            CES.OnSetSessionConfig += InitializeFromConfig;
             CES.OnStepComplete += SetNextTrainingStep;
             CES.OnNextStep += NextTrainingStep;
             CES.OnNextStep += GetNextStepWord;
             CES.OnNextTrainingPhase += NextTrainingPhase;
-            CES.OnTrainingEnd += EndTraining;
             CES.OnTrainingStart += StartTraining;
         }
     }
 
-    private IEnumerator LoadWordsFromWeb()
+    public void InitializeFromConfig(SessionConfig config)
     {
-        using (UnityWebRequest www = UnityWebRequest.Get(wordsUrl))
+        if (config == null)
         {
-            yield return www.SendWebRequest();
-
-#if UNITY_2020_2_OR_NEWER
-            if (www.result != UnityWebRequest.Result.Success)
-#else
-            if (www.isNetworkError || www.isHttpError)
-#endif
-            {
-                Debug.LogError("Error loading words.json: " + www.error);
-                yield break;
-            }
-
-            try
-            {
-                string json = www.downloadHandler.text;
-                WordPhaseWrapper wrapper = JsonUtility.FromJson<WordPhaseWrapper>(json);
-                if (wrapper != null)
-                {
-                    warmupWords = ConvertToUpper(wrapper.warmup ?? new List<string>());
-                    fourLetterWords = ConvertToUpper(wrapper.fourLetter ?? new List<string>());
-                    fiveLetterWords = ConvertToUpper(wrapper.fiveLetter ?? new List<string>());
-                    challengeWords = ConvertToUpper(wrapper.challenge ?? new List<string>());
-                }
-                else
-                {
-                    Debug.LogError("words.json has wrong format");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Failed to parse words.json: " + e);
-            }
-            // Merge all into trainingWords
-            trainingWords.Clear();
-            trainingWords.AddRange(warmupWords);
-            trainingWords.AddRange(fourLetterWords);
-            trainingWords.AddRange(fiveLetterWords);
-            trainingWords.AddRange(challengeWords);
+            Debug.LogError("InitializeFromConfig called with null SessionConfig.");
+            return;
         }
+
+        warmupWords = ConvertToUpper(config.warmup ?? new List<string>());
+        warmupWords.Insert(0, config.startingInteraction.ToUpper());
+        fourLetterWords = ConvertToUpper(config.fourLetter ?? new List<string>());
+        fiveLetterWords = ConvertToUpper(config.fiveLetter ?? new List<string>());
+        challengeWords = ConvertToUpper(config.challenge ?? new List<string>());
+        
+        trainingWords.Clear();
+        trainingWords.AddRange(warmupWords);
+        trainingWords.AddRange(fourLetterWords);
+        trainingWords.AddRange(fiveLetterWords);
+        trainingWords.AddRange(challengeWords);
+
+        Debug.Log($"*** TrainingManager initialized with {trainingWords.Count} words ***");
     }
 
     private List<string> ConvertToUpper(List<string> words)
     {
         return words.ConvertAll(x => x.ToUpper());
-        
     }
 
     // unsubscribe from all events
@@ -146,7 +121,6 @@ public class TrainingManager : MonoBehaviour
             CES.OnNextStep -= NextTrainingStep;
             CES.OnNextStep -= GetNextStepWord;
             CES.OnNextTrainingPhase -= NextTrainingPhase;
-            CES.OnTrainingEnd -= EndTraining;
             CES.OnTrainingStart -= StartTraining;
         }   
     }
@@ -170,7 +144,7 @@ public class TrainingManager : MonoBehaviour
     }
 
     // initializes training when user is ready
-    private void StartTraining()
+    private void StartTraining(string s)
     {
         if (trainingWords == null || trainingWords.Count == 0)
         {
@@ -178,6 +152,7 @@ public class TrainingManager : MonoBehaviour
             return;
         }
 
+        trainingWords[0] = s.ToUpper();
         currentTrainingPhase = TrainingPhase.Warmup;
         currentTrainingStep = PhaseStep.StepOne;
         CES.InvokeSetNextStepWord(trainingWords[currWordIndex]);
@@ -190,13 +165,10 @@ public class TrainingManager : MonoBehaviour
         if (currWordIndex == trainingWords.Count - 1)
         {
             Debug.Log("Training complete");
+            EndTraining();
             CES.InvokeOnTrainingEnd();
         }
-        //if (currentTrainingPhase == TrainingPhase.FiveLetters && currentTrainingStep == PhaseStep.StepThree)
-        //{
-        //    currentTrainingPhase = TrainingPhase.Done;
-        //    CES.InvokeOnTrainingEnd();
-        //}
+        
         else
         {
             CES.InvokeOnNextStep();
@@ -257,6 +229,11 @@ public class TrainingManager : MonoBehaviour
     // TODO: play music or display a message congratulating user on finishing
     private void EndTraining ()
     {
-        
+        currWordIndex = 0;
+        currentTrainingPhase = TrainingPhase.Warmup;
+        currentTrainingStep = PhaseStep.StepOne;
+
+        // If you have any flags like `trainingStarted` or timers, reset them here too.
+        Debug.Log("TrainingManager reset for new training run.");
     }
 }

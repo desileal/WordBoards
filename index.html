@@ -268,6 +268,14 @@ UBIQUITOUS
 PRESCIENT
 ..."></textarea>
         </div>
+
+        <div style="margin-top: 1rem;">
+          <label for="startingInteraction">Starting interaction</label>
+          <select id="startingInteraction">
+            <option value="poke">Poke</option>
+            <option value="grab">Grab</option>
+          </select>
+        </div>
       </div>
     </section>
 
@@ -329,11 +337,15 @@ PRESCIENT
           .filter(x => x.length > 0);
       }
 
+      const startingInteraction =
+    (document.getElementById("startingInteraction").value || "poke").toLowerCase();
+
       const obj = {
         warmup: extract("warmupwords"),
         fourLetter: extract("fourletterwords"),
         fiveLetter: extract("fiveletterwords"),
-        challenge: extract("challengewords")
+        challenge: extract("challengewords"),
+        startingInteraction: startingInteraction 
       };
 
       const json = JSON.stringify(obj, null, 2);
@@ -349,7 +361,7 @@ PRESCIENT
 
     const OWNER = "desileal";
     const REPO = "WordBoards";
-    const BRANCH = "0.2.0";
+    const BRANCH = "0.2.3";
 
     async function loadCurrentWords() {
       clearStatus();
@@ -396,9 +408,22 @@ PRESCIENT
         // Try to parse to put back in textarea as lines
         try {
           const parsed = JSON.parse(decoded);
-          if (parsed.words && Array.isArray(parsed.words)) {
-            document.getElementById("words").value = parsed.words.join("\n");
-          }
+          if (parsed.warmup) {
+              document.getElementById("warmupwords").value = parsed.warmup.join("\n");
+            }
+            if (parsed.fourLetter) {
+              document.getElementById("fourletterwords").value = parsed.fourLetter.join("\n");
+            }
+            if (parsed.fiveLetter) {
+              document.getElementById("fiveletterwords").value = parsed.fiveLetter.join("\n");
+            }
+            if (parsed.challenge) {
+              document.getElementById("challengewords").value = parsed.challenge.join("\n");
+            }
+            if (parsed.startingInteraction) {
+              document.getElementById("startingInteraction").value =
+                parsed.startingInteraction.toLowerCase();
+            }
         } catch (e) {
           // If parse fails, just leave preview as raw JSON
         }
