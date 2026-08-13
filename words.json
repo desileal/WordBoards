@@ -1,17 +1,17 @@
 {
   "warmup": [
     "hello",
-    "keats"
+    "cbe"
   ],
   "fourLetter": [
-    "shelley",
-    "yeats"
+    "salla",
+    "shelina"
   ],
   "fiveLetter": [
-    "austen"
+    "school"
   ],
   "challenge": [
-    "bronte"
+    "calgary"
   ],
   "startingInteraction": "poke"
 }
